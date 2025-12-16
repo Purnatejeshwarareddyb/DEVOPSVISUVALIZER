@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖥️ Linux Command Learning Lab</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff41;
+            min-height: 100vh;
+            padding: 1rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            height: 95vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff41;
+            border-radius: 15px;
+            padding: 1.5rem;
+            overflow-y: auto;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #00ff41;
+            border-radius: 4px;
+        }
+
+        .file-system {
+            margin-bottom: 2rem;
+        }
+
+        .file-tree {
+            list-style: none;
+            margin-left: 1rem;
+            margin-top: 1rem;
+        }
+
+        .file-tree li {
+            margin: 0.5rem 0;
+            cursor: pointer;
+            padding: 0.3rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .file-tree li:hover {
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        .file-icon { color: #4dffb8; }
+        .folder-icon { color: #ffcc00; }
+        .script-icon { color: #ff3366; }
+        .config-icon { color: #33ccff; }
+
+        .stats-panel {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid #00ff41;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .challenges-panel {
+            margin-top: 2rem;
+        }
+
+        .challenge {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid #00ff41;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .challenge:hover {
+            background: rgba(0, 255, 65, 0.1);
+            transform: translateX(5px);
+        }
+
+        .challenge.completed {
+            border-color: #4dff88;
+            background: rgba(77, 255, 136, 0.1);
+        }
+
+        .challenge-reward {
+            color: #ffcc00;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Main Terminal Area */
+        .main-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .terminal-wrapper {
+            background: rgba(0, 0, 0, 0.9);
+            border: 3px solid #00ff41;
+            border-radius: 15px;
+            overflow: hidden;
+            flex: 1;
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.3);
+            animation: terminalGlow 3s ease-in-out infinite;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes terminalGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 65, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(0, 255, 65, 0.5); }
+        }
+
+        .terminal-header {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 2px solid #00ff41;
+        }
+
+        .terminal-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .terminal-button {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .close-btn { background: #ff5f56; }
+        .minimize-btn { background: #ffbd2e; }
+        .maximize-btn { background: #27c93f; }
+
+        .terminal-title {
+            margin-left: 1rem;
+            color: #00ff41;
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex: 1;
+        }
+
+        .terminal-status {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .terminal {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            font-size: 1rem;
+            line-height: 1.6;
+            background: #000;
+            position: relative;
+        }
+
+        .terminal::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .terminal::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .terminal::-webkit-scrollbar-thumb {
+            background: #00ff41;
+            border-radius: 5px;
+        }
+
+        .prompt-line {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .prompt {
+            color: #00ff41;
+            margin-right: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .command-input {
+            background: transparent;
+            border: none;
+            color: #ffff00;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            outline: none;
+            flex: 1;
+            min-width: 300px;
+            caret-color: #00ff41;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2em;
+            background: #00ff41;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+
+        .output {
+            color: #ffffff;
+            white-space: pre-wrap;
+            margin: 0.5rem 0;
+            opacity: 0;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .command-text {
+            color: #ffff00;
+        }
+
+        .error-text {
+            color: #ff3366;
+        }
+
+        .success-text {
+            color: #4dff88;
+        }
+
+        .info-text {
+            color: #33ccff;
+        }
+
+        .highlight-text {
+            color: #ffcc00;
+        }
+
+        /* Visual File System */
+        .visual-fs {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff41;
+            border-radius: 15px;
+            padding: 1.5rem;
+            height: 200px;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .fs-container {
+            display: flex;
+            gap: 1rem;
+            height: 100%;
+            align-items: flex-start;
+        }
+
+        .directory {
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid #00ff41;
+            border-radius: 10px;
+            padding: 1rem;
+            min-width: 150px;
+            transition: all 0.3s ease;
+        }
+
+        .directory.active {
+            background: rgba(0, 255, 65, 0.2);
+            border-color: #4dff88;
+            transform: translateY(-5px);
+        }
+
+        .directory-name {
+            color: #ffcc00;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid #00ff41;
+            padding-bottom: 0.3rem;
+        }
+
+        .file-item {
+            padding: 0.3rem;
+            margin: 0.2rem 0;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .file-item:hover {
+            background: rgba(0, 255, 65, 0.2);
+            transform: translateX(5px);
+        }
+
+        /* Command Palette */
+        .command-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .cmd-card {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid #00ff41;
+            border-radius: 10px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .cmd-card:hover {
+            background: rgba(0, 255, 65, 0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 255, 65, 0.3);
+        }
+
+        .cmd-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .cmd-name {
+            color: #00ff41;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+
+        .cmd-desc {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        /* Network Visualization */
+        .network-viz {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .network-node {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #00ff41;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ff41;
+        }
+
+        /* Achievement Popup */
+        .achievement-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            border: 2px solid #ffcc00;
+            border-radius: 10px;
+            padding: 1.5rem;
+            transform: translateX(400px);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            min-width: 300px;
+        }
+
+        .achievement-popup.show {
+            transform: translateX(0);
+        }
+
+        .achievement-icon {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #ffcc00;
+        }
+
+        .achievement-title {
+            color: #ffcc00;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievement-desc {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* Loading Animation */
+        .loading-bar {
+            height: 3px;
+            background: #00ff41;
+            width: 0%;
+            transition: width 0.3s ease;
+            margin-top: 0.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .sidebar {
+                height: 400px;
+            }
+        }
+
+        /* File Explorer Animations */
+        .file-explosion {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #00ff41;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Process Monitor */
+        .process-monitor {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .process-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid #333;
+        }
+
+        .process-bar {
+            height: 6px;
+            background: #00ff41;
+            border-radius: 3px;
+            margin-top: 0.3rem;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Network Visualization Background -->
+    <div class="network-viz" id="networkViz"></div>
+
+    <!-- Achievement Popup -->
+    <div class="achievement-popup" id="achievementPopup">
+        <div class="achievement-icon">🏆</div>
+        <div class="achievement-title" id="achievementTitle">Linux Master</div>
+        <div class="achievement-desc" id="achievementDesc">Completed all challenges!</div>
+    </div>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="file-system">
+                <h3 style="color: #00ff41; margin-bottom: 1rem;">📁 File System Explorer</h3>
+                <div class="file-tree" id="fileTree">
+                    <!-- Dynamically generated -->
+                </div>
+            </div>
+
+            <div class="stats-panel">
+                <h4 style="color: #00ff41; margin-bottom: 1rem;">📊 Statistics</h4>
+                <div class="stat-item">
+                    <span>Commands Executed:</span>
+                    <span id="cmdCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Files Created:</span>
+                    <span id="fileCount">8</span>
+                </div>
+                <div class="stat-item">
+                    <span>Challenges Completed:</span>
+                    <span id="challengeCount">0/12</span>
+                </div>
+                <div class="stat-item">
+                    <span>Current Directory:</span>
+                    <span id="currentDir">/home/user</span>
+                </div>
+                <div class="loading-bar" id="systemLoad"></div>
+            </div>
+
+            <div class="challenges-panel">
+                <h3 style="color: #00ff41; margin-bottom: 1rem;">🎯 Learning Challenges</h3>
+                <div class="challenge" onclick="startChallenge(1)" data-challenge="1">
+                    <div style="color: #4dff88;">1. Navigate Directory</div>
+                    <div style="color: #888; font-size: 0.9rem;">Use cd command to change directories</div>
+                    <div class="challenge-reward">Reward: +100 XP</div>
+                </div>
+                <div class="challenge" onclick="startChallenge(2)" data-challenge="2">
+                    <div style="color: #4dff88;">2. List Files</div>
+                    <div style="color: #888; font-size: 0.9rem;">Use ls to view directory contents</div>
+                    <div class="challenge-reward">Reward: +150 XP</div>
+                </div>
+                <div class="challenge" onclick="startChallenge(3)" data-challenge="3">
+                    <div style="color: #888;">3. Create File</div>
+                    <div style="color: #888; font-size: 0.9rem;">Use touch to create new files</div>
+                    <div class="challenge-reward">Reward: +200 XP</div>
+                </div>
+            </div>
+
+            <div class="process-monitor">
+                <h4 style="color: #00ff41; margin-bottom: 1rem;">⚡ Active Processes</h4>
+                <div id="processList">
+                    <div class="process-item">
+                        <span>Terminal</span>
+                        <span style="color: #4dff88;">RUNNING</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Area -->
+        <div class="main-area">
+            <div class="terminal-wrapper">
+                <div class="terminal-header">
+                    <div class="terminal-buttons">
+                        <div class="terminal-button close-btn" onclick="shutdownTerminal()"></div>
+                        <div class="terminal-button minimize-btn" onclick="minimizeTerminal()"></div>
+                        <div class="terminal-button maximize-btn" onclick="maximizeTerminal()"></div>
+                    </div>
+                    <div class="terminal-title">user@linux-lab:~$</div>
+                    <div class="terminal-status">[ACTIVE]</div>
+                </div>
+                <div class="terminal" id="terminal">
+                    <div class="output success-text">╔═══════════════════════════════════════════╗</div>
+                    <div class="output success-text">║    🖥️ LINUX COMMAND LEARNING LAB           ║</div>
+                    <div class="output success-text">║        Interactive Simulation            ║</div>
+                    <div class="output success-text">╚═══════════════════════════════════════════╝</div>
+                    <div class="output">Type 'help' for available commands</div>
+                    <div class="output">Type 'challenges' to see learning objectives</div>
+                    <div class="output">Type 'clear' to clear the terminal</div>
+                    <div class="output info-text">System ready. Current user: student | Permissions: rwx</div>
+                    
+                    <div class="prompt-line" id="promptLine">
+                        <div class="prompt" id="currentPrompt">student@linux-lab:~$</div>
+                        <input type="text" class="command-input" id="commandInput" autocomplete="off" spellcheck="false" autofocus />
+                        <div class="cursor"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visual-fs">
+                <h4 style="color: #00ff41; margin-bottom: 1rem;">📊 Visual File System</h4>
+                <div class="fs-container" id="fsContainer">
+                    <!-- Directories will be dynamically added -->
+                </div>
+            </div>
+
+            <div class="command-palette">
+                <div class="cmd-card" onclick="quickCommand('ls -la')">
+                    <div class="cmd-icon">📁</div>
+                    <div class="cmd-name">ls -la</div>
+                    <div class="cmd-desc">List all files with details</div>
+                </div>
+                <div class="cmd-card" onclick="quickCommand('pwd')">
+                    <div class="cmd-icon">📍</div>
+                    <div class="cmd-name">pwd</div>
+                    <div class="cmd-desc">Print working directory</div>
+                </div>
+                <div class="cmd-card" onclick="quickCommand('mkdir project')">
+                    <div class="cmd-icon">📂</div>
+                    <div class="cmd-name">mkdir</div>
+                    <div class="cmd-desc">Create new directory</div>
+                </div>
+                <div class="cmd-card" onclick="quickCommand('touch file.txt')">
+                    <div class="cmd-icon">📄</div>
+                    <div class="cmd-name">touch</div>
+                    <div class="cmd-desc">Create empty file</div>
+                </div>
+                <div class="cmd-card" onclick="quickCommand('cat file.txt')">
+                    <div class="cmd-icon">👁️</div>
+                    <div class="cmd-name">cat</div>
+                    <div class="cmd-desc">Display file contents</div>
+                </div>
+                <div class="cmd-card" onclick="quickCommand('rm file.txt')">
+                    <div class="cmd-icon">🗑️</div>
+                    <div class="cmd-name">rm</div>
+                    <div class="cmd-desc">Remove file</div>
+                </div>
+                <div class="cmd-card" onclick="quickCommand('chmod 755 script.sh')">
+                    <div class="cmd-icon">🔒</div>
+                    <div class="cmd-name">chmod</div>
+                    <div class="cmd-desc">Change permissions</div>
+                </div>
+                <div class="cmd-card" onclick="quickCommand('ps aux')">
+                    <div class="cmd-icon">⚡</div>
+                    <div class="cmd-name">ps</div>
+                    <div class="cmd-desc">View processes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global State
+        const state = {
+            currentDir: '/home/user',
+            fileSystem: {
+                '/home/user': {
+                    type: 'directory',
+                    contents: {
+                        '.bashrc': { type: 'file', content: '# Bash config', size: '1.2KB' },
+                        '.profile': { type: 'file', content: '# User profile', size: '0.8KB' },
+                        'documents': { type: 'directory', contents: {} },
+                        'projects': { 
+                            type: 'directory', 
+                            contents: {
+                                'web-app': { type: 'directory', contents: {} },
+                                'scripts': { type: 'directory', contents: {} }
+                            }
+                        },
+                        'logs': { 
+                            type: 'directory', 
+                            contents: {
+                                'app.log': { type: 'file', content: '[INFO] Application started\n[ERROR] File not found\n[DEBUG] Connection established', size: '2.3KB' },
+                                'error.log': { type: 'file', content: 'Error log file', size: '1.1KB' }
+                            }
+                        },
+                        'config.yaml': { type: 'file', content: 'database:\n  host: localhost\n  port: 5432', size: '0.5KB' },
+                        'script.sh': { type: 'file', content: '#!/bin/bash\necho "Hello Linux!"', size: '0.3KB', executable: true }
+                    }
+                }
+            },
+            commandHistory: [],
+            challenges: {},
+            stats: {
+                commandsExecuted: 0,
+                filesCreated: 8,
+                directoriesCreated: 3
+            },
+            processes: []
+        };
+
+        // DOM Elements
+        const terminal = document.getElementById('terminal');
+        const commandInput = document.getElementById('commandInput');
+        const fileTree = document.getElementById('fileTree');
+        const fsContainer = document.getElementById('fsContainer');
+        const currentDirSpan = document.getElementById('currentDir');
+        const cmdCountSpan = document.getElementById('cmdCount');
+        const fileCountSpan = document.getElementById('fileCount');
+        const challengeCountSpan = document.getElementById('challengeCount');
+        const achievementPopup = document.getElementById('achievementPopup');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createNetworkBackground();
+            renderFileTree();
+            renderVisualFS();
+            updateStats();
+            startSystemAnimations();
+            showWelcomeMessage();
+        });
+
+        // Network Background Animation
+        function createNetworkBackground() {
+            const viz = document.getElementById('networkViz');
+            for (let i = 0; i < 50; i++) {
+                const node = document.createElement('div');
+                node.className = 'network-node';
+                node.style.left = `${Math.random() * 100}%`;
+                node.style.top = `${Math.random() * 100}%`;
+                node.style.animation = `float ${3 + Math.random() * 4}s ease-in-out infinite`;
+                
+                // Add CSS for float animation
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes float {
+                        0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+                        50% { transform: translate(${Math.random() * 50 - 25}px, ${Math.random() * 50 - 25}px) scale(1.5); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                viz.appendChild(node);
+            }
+        }
+
+        // File Tree Renderer
+        function renderFileTree() {
+            fileTree.innerHTML = '';
+            renderDirectory(state.fileSystem['/home/user'], '');
+        }
+
+        function renderDirectory(dir, path, depth = 0) {
+            for (const [name, item] of Object.entries(dir.contents)) {
+                const li = document.createElement('li');
+                li.style.paddingLeft = `${depth * 20}px`;
+                
+                if (item.type === 'directory') {
+                    li.innerHTML = `<span class="folder-icon">📂</span> ${name}`;
+                    li.onclick = () => {
+                        navigateToDirectory(path ? `${path}/${name}` : name);
+                    };
+                    
+                    // Add child items
+                    const ul = document.createElement('ul');
+                    ul.className = 'file-tree';
+                    ul.style.display = 'none';
+                    renderDirectory(item, path ? `${path}/${name}` : name, depth + 1).forEach(child => ul.appendChild(child));
+                    
+                    li.onclick = () => {
+                        ul.style.display = ul.style.display === 'none' ? 'block' : 'none';
+                        navigateToDirectory(path ? `${path}/${name}` : name);
+                    };
+                    
+                    fileTree.appendChild(li);
+                    fileTree.appendChild(ul);
+                } else {
+                    const icon = name.endsWith('.sh') ? 'script-icon' : 
+                                name.endsWith('.yaml') || name.endsWith('.yml') ? 'config-icon' : 'file-icon';
+                    li.innerHTML = `<span class="${icon}">${name.endsWith('.sh') ? '🐚' : '📄'}</span> ${name}`;
+                    li.onclick = () => {
+                        openFile(path ? `${path}/${name}` : name);
+                    };
+                    fileTree.appendChild(li);
+                }
+            }
+        }
+
+        // Visual File System Renderer
+        function renderVisualFS() {
+            fsContainer.innerHTML = '';
+            const pathParts = state.currentDir.split('/').filter(p => p);
+            
+            pathParts.forEach((part, index) => {
+                const dir = document.createElement('div');
+                dir.className = 'directory';
+                dir.innerHTML = `
+                    <div class="directory-name">📂 ${part || 'root'}</div>
+                    <div class="file-item">📄 .hidden</div>
+                    <div class="file-item">📄 config</div>
+                    <div class="file-item">🐚 script.sh</div>
+                `;
+                fsContainer.appendChild(dir);
+            });
+        }
+
+        // Command Processing
+        commandInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const command = commandInput.value.trim();
+                if (command) {
+                    processCommand(command);
+                    commandInput.value = '';
+                }
+            }
+        });
+
+        function processCommand(cmd) {
+            // Add command to history
+            state.commandHistory.push(cmd);
+            state.stats.commandsExecuted++;
+            updateStats();
+            
+            // Show command in terminal
+            addTerminalOutput(`student@linux-lab:${state.currentDir}$ ${cmd}`, 'command-text');
+            
+            // Process command
+            const [baseCmd, ...args] = cmd.split(' ');
+            
+            switch (baseCmd.toLowerCase()) {
+                case 'ls':
+                    executeLs(args);
+                    break;
+                case 'cd':
+                    executeCd(args[0]);
+                    break;
+                case 'pwd':
+                    executePwd();
+                    break;
+                case 'cat':
+                    executeCat(args[0]);
+                    break;
+                case 'mkdir':
+                    executeMkdir(args[0]);
+                    break;
+                case 'touch':
+                    executeTouch(args[0]);
+                    break;
+                case 'rm':
+                    executeRm(args[0]);
+                    break;
+                case 'chmod':
+                    executeChmod(args[0], args[1]);
+                    break;
+                case 'grep':
+                    executeGrep(args[0], args[1]);
+                    break;
+                case 'find':
+                    executeFind(args);
+                    break;
+                case 'ps':
+                    executePs();
+                    break;
+                case 'clear':
+                    clearTerminal();
+                    break;
+                case 'help':
+                    executeHelp();
+                    break;
+                case 'challenges':
+                    showChallenges();
+                    break;
+                case 'history':
+                    showHistory();
+                    break;
+                case 'tree':
+                    showTree();
+                    break;
+                case 'whoami':
+                    addTerminalOutput('student', 'success-text');
+                    break;
+                case 'date':
+                    addTerminalOutput(new Date().toLocaleString(), 'success-text');
+                    break;
+                case 'echo':
+                    addTerminalOutput(args.join(' '), 'success-text');
+                    break;
+                case 'ping':
+                    simulatePing(args[0]);
+                    break;
+                default:
+                    addTerminalOutput(`bash: ${baseCmd}: command not found`, 'error-text');
+            }
+            
+            // Check for challenge completion
+            checkChallengeCompletion(baseCmd, args);
+        }
+
+        // Command Implementations
+        function executeLs(args = []) {
+            const showAll = args.includes('-a') || args.includes('-la');
+            const longFormat = args.includes('-l') || args.includes('-la');
+            
+            let output = '';
+            const dir = getCurrentDirectory();
+            
+            for (const [name, item] of Object.entries(dir.contents)) {
+                if (!showAll && name.startsWith('.')) continue;
+                
+                if (longFormat) {
+                    const type = item.type === 'directory' ? 'd' : '-';
+                    const perms = item.executable ? 'rwxr-xr-x' : 'rw-r--r--';
+                    const size = item.size || '1.0K';
+                    output += `${type}${perms} 1 user user ${size} Dec  8 10:30 ${name}\n`;
+                } else {
+                    output += `${name}  `;
+                }
+            }
+            
+            addTerminalOutput(output || 'Directory is empty', 'success-text');
+        }
+
+        function executeCd(path) {
+            if (!path || path === '~') {
+                state.currentDir = '/home/user';
+            } else if (path === '..') {
+                const parts = state.currentDir.split('/').filter(p => p);
+                parts.pop();
+                state.currentDir = '/' + parts.join('/') || '/';
+            } else if (path === '/') {
+                state.currentDir = '/';
+            } else {
+                const newPath = state.currentDir.endsWith('/') ? state.currentDir + path : state.currentDir + '/' + path;
+                if (getDirectory(newPath)) {
+                    state.currentDir = newPath;
+                } else {
+                    addTerminalOutput(`bash: cd: ${path}: No such file or directory`, 'error-text');
+                    return;
+                }
+            }
+            
+            updateCurrentDir();
+            renderVisualFS();
+            addTerminalOutput('', 'success-text');
+        }
+
+        function executePwd() {
+            addTerminalOutput(state.currentDir, 'success-text');
+        }
+
+        function executeCat(filename) {
+            if (!filename) {
+                addTerminalOutput('Usage: cat <filename>', 'error-text');
+                return;
+            }
+            
+            const file = getFile(filename);
+            if (file) {
+                addTerminalOutput(file.content || '(empty file)', 'info-text');
+            } else {
+                addTerminalOutput(`cat: ${filename}: No such file or directory`, 'error-text');
+            }
+        }
+
+        function executeMkdir(dirname) {
+            if (!dirname) {
+                addTerminalOutput('Usage: mkdir <directory-name>', 'error-text');
+                return;
+            }
+            
+            const currentDir = getCurrentDirectory();
+            if (!currentDir.contents[dirname]) {
+                currentDir.contents[dirname] = { type: 'directory', contents: {} };
+                state.stats.directoriesCreated++;
+                updateStats();
+                addTerminalOutput(`Directory '${dirname}' created successfully`, 'success-text');
+                renderFileTree();
+                renderVisualFS();
+                
+                // Visual feedback
+                createExplosionAnimation();
+            } else {
+                addTerminalOutput(`mkdir: cannot create directory '${dirname}': File exists`, 'error-text');
+            }
+        }
+
+        function executeTouch(filename) {
+            if (!filename) {
+                addTerminalOutput('Usage: touch <filename>', 'error-text');
+                return;
+            }
+            
+            const currentDir = getCurrentDirectory();
+            if (!currentDir.contents[filename]) {
+                currentDir.contents[filename] = { type: 'file', content: '', size: '0B' };
+                state.stats.filesCreated++;
+                updateStats();
+                addTerminalOutput(`File '${filename}' created successfully`, 'success-text');
+                renderFileTree();
+                
+                // Visual feedback
+                createFileAnimation(filename);
+            } else {
+                addTerminalOutput(`File '${filename}' already exists`, 'info-text');
+            }
+        }
+
+        function executeChmod(mode, filename) {
+            if (!mode || !filename) {
+                addTerminalOutput('Usage: chmod <mode> <filename>', 'error-text');
+                return;
+            }
+            
+            const file = getFile(filename);
+            if (file) {
+                file.executable = true;
+                addTerminalOutput(`Permissions changed to ${mode} for '${filename}'`, 'success-text');
+                
+                // Visual feedback
+                createPermissionAnimation();
+            } else {
+                addTerminalOutput(`chmod: cannot access '${filename}': No such file or directory`, 'error-text');
+            }
+        }
+
+        // Helper Functions
+        function getCurrentDirectory() {
+            let current = state.fileSystem;
+            const parts = state.currentDir.split('/').filter(p => p);
+            
+            for (const part of parts) {
+                if (current[part] && current[part].type === 'directory') {
+                    current = current[part].contents;
+                } else {
+                    return null;
+                }
+            }
+            return current;
+        }
+
+        function getFile(path) {
+            const parts = path.split('/').filter(p => p);
+            let current = state.fileSystem;
+            
+            for (let i = 0; i < parts.length - 1; i++) {
+                if (current[parts[i]] && current[parts[i]].type === 'directory') {
+                    current = current[parts[i]].contents;
+                } else {
+                    return null;
+                }
+            }
+            
+            const filename = parts[parts.length - 1];
+            return current[filename];
+        }
+
+        function getDirectory(path) {
+            if (path === '/') return state.fileSystem;
+            
+            const parts = path.split('/').filter(p => p);
+            let current = state.fileSystem;
+            
+            for (const part of parts) {
+                if (current[part] && current[part].type === 'directory') {
+                    current = current[part].contents;
+                } else {
+                    return null;
+                }
+            }
+            return { contents: current };
+        }
+
+        // Terminal Output Functions
+        function addTerminalOutput(text, className = 'output') {
+            const output = document.createElement('div');
+            output.className = className;
+            output.textContent = text;
+            
+            const promptLine = document.getElementById('promptLine');
+            terminal.insertBefore(output, promptLine);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function clearTerminal() {
+            const promptLine = document.getElementById('promptLine');
+            terminal.innerHTML = '';
+            terminal.appendChild(promptLine);
+            addTerminalOutput('Terminal cleared.', 'info-text');
+        }
+
+        // Update UI Functions
+        function updateCurrentDir() {
+            currentDirSpan.textContent = state.currentDir;
+            document.getElementById('currentPrompt').textContent = `student@linux-lab:${state.currentDir}$`;
+        }
+
+        function updateStats() {
+            cmdCountSpan.textContent = state.stats.commandsExecuted;
+            fileCountSpan.textContent = state.stats.filesCreated;
+            
+            const completed = Object.values(state.challenges).filter(c => c.completed).length;
+            challengeCountSpan.textContent = `${completed}/12`;
+            
+            // Update system load bar
+            const loadBar = document.getElementById('systemLoad');
+            const load = Math.min(100, state.stats.commandsExecuted % 100);
+            loadBar.style.width = `${load}%`;
+        }
+
+        // Visual Effects
+        function createExplosionAnimation() {
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'file-explosion';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.animation = `explode ${1 + Math.random()}s ease-out forwards`;
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 1000);
+            }
+            
+            // Add CSS for explode animation
+            const style = document.createElement('style');
+            if (!document.querySelector('#explode-animation')) {
+                style.id = 'explode-animation';
+                style.textContent = `
+                    @keyframes explode {
+                        0% { transform: scale(0) rotate(0deg); opacity: 1; }
+                        100% { transform: scale(5) rotate(360deg); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        function createFileAnimation(filename) {
+            const fileIcon = document.createElement('div');
+            fileIcon.textContent = '📄';
+            fileIcon.style.position = 'fixed';
+            fileIcon.style.fontSize = '3rem';
+            fileIcon.style.opacity = '0';
+            fileIcon.style.transform = 'translate(-50%, -50%) scale(0)';
+            
+            const rect = commandInput.getBoundingClientRect();
+            fileIcon.style.left = `${rect.right}px`;
+            fileIcon.style.top = `${rect.top}px`;
+            
+            document.body.appendChild(fileIcon);
+            
+            // Animate to sidebar
+            requestAnimationFrame(() => {
+                fileIcon.style.transition = 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                fileIcon.style.opacity = '1';
+                fileIcon.style.transform = 'translate(-50%, -50%) scale(1)';
+                
+                setTimeout(() => {
+                    const target = document.querySelector('.file-system').getBoundingClientRect();
+                    fileIcon.style.left = `${target.left + 50}px`;
+                    fileIcon.style.top = `${target.top + 100}px`;
+                    fileIcon.style.transform = 'scale(0.5)';
+                    fileIcon.style.opacity = '0';
+                    
+                    setTimeout(() => fileIcon.remove(), 500);
+                }, 500);
+            });
+        }
+
+        // Challenges System
+        function startChallenge(num) {
+            const challenge = document.querySelector(`[data-challenge="${num}"]`);
+            if (!challenge.classList.contains('completed')) {
+                state.challenges[num] = { started: true, completed: false };
+                
+                // Show challenge instructions
+                const instructions = [
+                    "Use 'cd documents' to navigate to documents directory",
+                    "Use 'ls -la' to list all files including hidden ones",
+                    "Use 'touch newfile.txt' to create a new file",
+                    "Use 'mkdir backup' to create backup directory",
+                    "Use 'cat config.yaml' to view configuration file",
+                    "Use 'chmod 755 script.sh' to make script executable",
+                    "Use 'find . -name \"*.log\"' to find log files",
+                    "Use 'grep ERROR logs/app.log' to find errors",
+                    "Use 'ps aux' to view running processes",
+                    "Use 'rm oldfile.txt' to remove a file",
+                    "Use 'mv file.txt newname.txt' to rename file",
+                    "Create a script and make it executable"
+                ];
+                
+                addTerminalOutput(`🎯 Challenge ${num}: ${instructions[num - 1]}`, 'highlight-text');
+                addTerminalOutput('Type the command to complete the challenge...', 'info-text');
+            }
+        }
+
+        function checkChallengeCompletion(cmd, args) {
+            Object.keys(state.challenges).forEach(num => {
+                if (!state.challenges[num].completed) {
+                    let completed = false;
+                    
+                    switch (parseInt(num)) {
+                        case 1:
+                            completed = cmd === 'cd' && args[0] === 'documents';
+                            break;
+                        case 2:
+                            completed = cmd === 'ls' && args.includes('-la');
+                            break;
+                        case 3:
+                            completed = cmd === 'touch' && args[0];
+                            break;
+                        case 4:
+                            completed = cmd === 'mkdir' && args[0];
+                            break;
+                        case 5:
+                            completed = cmd === 'cat' && args[0] === 'config.yaml';
+                            break;
+                        case 6:
+                            completed = cmd === 'chmod' && args[0] === '755' && args[1] === 'script.sh';
+                            break;
+                    }
+                    
+                    if (completed) {
+                        state.challenges[num].completed = true;
+                        completeChallenge(num);
+                    }
+                }
+            });
+        }
+
+        function completeChallenge(num) {
+            const challenge = document.querySelector(`[data-challenge="${num}"]`);
+            challenge.classList.add('completed');
+            challenge.querySelector('.challenge-reward').innerHTML = '✅ COMPLETED! +XP';
+            
+            showAchievement(`Challenge ${num} Complete`, 'Successfully completed the learning challenge!');
+            updateStats();
+        }
+
+        // Achievement System
+        function showAchievement(title, description) {
+            document.getElementById('achievementTitle').textContent = title;
+            document.getElementById('achievementDesc').textContent = description;
+            
+            achievementPopup.classList.add('show');
+            
+            setTimeout(() => {
+                achievementPopup.classList.remove('show');
+            }, 3000);
+        }
+
+        // Quick Commands
+        function quickCommand(cmd) {
+            commandInput.value = cmd;
+            processCommand(cmd);
+        }
+
+        // System Animations
+        function startSystemAnimations() {
+            // Simulate system processes
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    const processes = ['systemd', 'bash', 'node', 'python', 'docker'];
+                    const process = processes[Math.floor(Math.random() * processes.length)];
+                    
+                    const processList = document.getElementById('processList');
+                    const item = document.createElement('div');
+                    item.className = 'process-item';
+                    item.innerHTML = `
+                        <span>${process}</span>
+                        <span style="color: #4dff88;">RUNNING</span>
+                    `;
+                    processList.appendChild(item);
+                    
+                    setTimeout(() => item.remove(), 5000);
+                }
+            }, 3000);
+        }
+
+        // Welcome Message
+        function showWelcomeMessage() {
+            setTimeout(() => {
+                addTerminalOutput('🚀 Welcome to the Linux Learning Lab!', 'highlight-text');
+                addTerminalOutput('Try clicking on commands or type "help" to begin.', 'info-text');
+            }, 1000);
+        }
+
+        // Terminal Controls
+        function shutdownTerminal() {
+            addTerminalOutput('Initiating shutdown sequence...', 'error-text');
+            setTimeout(() => {
+                addTerminalOutput('System will restart in 3...', 'error-text');
+                setTimeout(() => {
+                    addTerminalOutput('2...', 'error-text');
+                    setTimeout(() => {
+                        addTerminalOutput('1...', 'error-text');
+                        setTimeout(() => {
+                            clearTerminal();
+                            addTerminalOutput('System rebooted. Welcome back!', 'success-text');
+                        }, 1000);
+                    }, 1000);
+                }, 1000);
+            }, 1000);
+        }
+
+        function minimizeTerminal() {
+            const wrapper = document.querySelector('.terminal-wrapper');
+            wrapper.style.transform = 'scale(0.95)';
+            wrapper.style.opacity = '0.8';
+            setTimeout(() => {
+                wrapper.style.transform = 'scale(1)';
+                wrapper.style.opacity = '1';
+            }, 300);
+        }
+
+        function maximizeTerminal() {
+            const wrapper = document.querySelector('.terminal-wrapper');
+            if (wrapper.style.flex === '2') {
+                wrapper.style.flex = '1';
+            } else {
+                wrapper.style.flex = '2';
+            }
+        }
+
+        // Additional Command Implementations
+        function executeGrep(pattern, filename) {
+            if (!pattern || !filename) {
+                addTerminalOutput('Usage: grep <pattern> <filename>', 'error-text');
+                return;
+            }
+            
+            const file = getFile(filename);
+            if (file && file.content) {
+                const lines = file.content.split('\n');
+                const matches = lines.filter(line => line.includes(pattern));
+                
+                if (matches.length > 0) {
+                    matches.forEach(line => addTerminalOutput(line, 'highlight-text'));
+                } else {
+                    addTerminalOutput('No matches found', 'info-text');
+                }
+            } else {
+                addTerminalOutput(`grep: ${filename}: No such file or directory`, 'error-text');
+            }
+        }
+
+        function executeFind(args) {
+            addTerminalOutput('Searching for files...', 'info-text');
+            setTimeout(() => {
+                addTerminalOutput('./script.sh\n./logs/app.log\n./logs/error.log', 'success-text');
+            }, 1000);
+        }
+
+        function executePs() {
+            addTerminalOutput(`  PID USER     COMMAND\n  123 student   bash\n  456 student   ps aux\n  789 system    systemd`, 'info-text');
+        }
+
+        function executeHelp() {
+            const helpText = `
+Available Commands:
+  ls [options]       - List directory contents
+  cd <directory>     - Change directory
+  pwd                - Print working directory
+  mkdir <name>       - Create directory
+  touch <file>       - Create empty file
+  cat <file>         - Display file contents
+  rm <file>          - Remove file
+  chmod <mode> <file>- Change permissions
+  grep <pattern> <file> - Search text
+  find <pattern>     - Find files
+  ps                 - Show processes
+  clear              - Clear terminal
+  help               - Show this message
+  challenges         - View learning challenges
+  history            - Show command history
+  tree               - Show directory tree
+  whoami             - Show current user
+  date               - Show current date/time
+  echo <text>        - Display text
+  ping <host>        - Test network connectivity
+
+Click command cards for quick execution!
+            `;
+            addTerminalOutput(helpText, 'info-text');
+        }
+
+        function showChallenges() {
+            const challenges = [
+                "1. Navigate to documents directory",
+                "2. List all files with details",
+                "3. Create a new text file",
+                "4. Create a backup directory",
+                "5. View configuration file",
+                "6. Make script executable",
+                "7. Find log files",
+                "8. Search for errors in logs",
+                "9. View running processes",
+                "10. Remove a file",
+                "11. Rename a file",
+                "12. Create and execute a script"
+            ];
+            
+            addTerminalOutput('🎯 Learning Challenges:', 'highlight-text');
+            challenges.forEach(ch => addTerminalOutput(ch, 'info-text'));
+        }
+
+        function showHistory() {
+            addTerminalOutput('Command History:', 'highlight-text');
+            state.commandHistory.slice(-10).forEach((cmd, i) => {
+                addTerminalOutput(`${state.commandHistory.length - 9 + i}: ${cmd}`, 'info-text');
+            });
+        }
+
+        function showTree() {
+            const tree = `
+/home/user/
+├── .bashrc
+├── .profile
+├── documents/
+├── projects/
+│   ├── web-app/
+│   └── scripts/
+├── logs/
+│   ├── app.log
+│   └── error.log
+├── config.yaml
+└── script.sh
+            `;
+            addTerminalOutput(tree, 'success-text');
+        }
+
+        function simulatePing(host) {
+            if (!host) {
+                addTerminalOutput('Usage: ping <host>', 'error-text');
+                return;
+            }
+            
+            addTerminalOutput(`PING ${host} (93.184.216.34): 56 data bytes`, 'info-text');
+            
+            let count = 0;
+            const interval = setInterval(() => {
+                count++;
+                const time = (Math.random() * 20 + 10).toFixed(1);
+                addTerminalOutput(`64 bytes from ${host}: icmp_seq=${count} ttl=57 time=${time} ms`, 'success-text');
+                
+                if (count >= 4) {
+                    clearInterval(interval);
+                    addTerminalOutput(`--- ${host} ping statistics ---`, 'info-text');
+                    addTerminalOutput('4 packets transmitted, 4 packets received, 0.0% packet loss', 'success-text');
+                }
+            }, 800);
+        }
+
+        // Navigate directory from sidebar
+        function navigateToDirectory(dir) {
+            executeCd(dir);
+        }
+
+        function openFile(filename) {
+            executeCat(filename);
+        }
+
+        // Permission animation
+        function createPermissionAnimation() {
+            const lock = document.createElement('div');
+            lock.textContent = '🔓';
+            lock.style.position = 'fixed';
+            lock.style.fontSize = '4rem';
+            lock.style.opacity = '0';
+            lock.style.zIndex = '1000';
+            lock.style.left = '50%';
+            lock.style.top = '50%';
+            lock.style.transform = 'translate(-50%, -50%) scale(0)';
+            
+            document.body.appendChild(lock);
+            
+            requestAnimationFrame(() => {
+                lock.style.transition = 'all 0.5s ease';
+                lock.style.opacity = '1';
+                lock.style.transform = 'translate(-50%, -50%) scale(1)';
+                
+                setTimeout(() => {
+                    lock.style.opacity = '0';
+                    lock.style.transform = 'translate(-50%, -50%) scale(2)';
+                    setTimeout(() => lock.remove(), 500);
+                }, 1000);
+            });
+        }
+
+        // Auto-focus input
+        setInterval(() => {
+            if (document.activeElement !== commandInput) {
+                commandInput.focus();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

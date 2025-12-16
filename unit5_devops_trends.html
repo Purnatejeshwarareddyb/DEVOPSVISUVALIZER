@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps Trends & Ecosystem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #141e30 0%, #243b55 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(240, 147, 251, 0.5)); }
+            50% { filter: drop-shadow(0 0 40px rgba(245, 87, 108, 0.8)); }
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 3rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .nav-tab {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .nav-tab:hover, .nav-tab.active {
+            background: linear-gradient(135deg, rgba(240, 147, 251, 0.3), rgba(245, 87, 108, 0.3));
+            border-color: #f5576c;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            animation: popIn 0.6s ease backwards;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .stat-card:hover {
+            transform: translateY(-15px) scale(1.05);
+            border-color: #f5576c;
+            box-shadow: 0 20px 60px rgba(245, 87, 108, 0.4);
+        }
+
+        .stat-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Skills */
+        .skills-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .skill-category {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .skill-category:hover {
+            transform: translateY(-10px);
+            border-color: rgba(240, 147, 251, 0.5);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .skill-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #f093fb;
+        }
+
+        .skill-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid #f5576c;
+            padding: 1rem;
+            margin: 0.8rem 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(10px);
+            border-left-color: #f093fb;
+        }
+
+        .skill-name {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .skill-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .skill-progress {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            width: 0;
+            transition: width 1s ease;
+            border-radius: 2px;
+        }
+
+        /* Pipeline */
+        .pipeline-container {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 3rem 0;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .pipeline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            min-height: 300px;
+        }
+
+        .pipeline-stage {
+            width: 180px;
+            min-height: 180px;
+            background: linear-gradient(135deg, rgba(67, 233, 123, 0.3), rgba(56, 249, 215, 0.3));
+            border: 2px solid rgba(67, 233, 123, 0.5);
+            border-radius: 20px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            animation: slideIn 0.6s ease backwards;
+        }
+
+        .pipeline-stage:nth-child(odd) { animation-delay: 0.1s; }
+        .pipeline-stage:nth-child(even) { animation-delay: 0.3s; }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .pipeline-stage:hover {
+            transform: scale(1.1);
+            box-shadow: 0 20px 60px rgba(67, 233, 123, 0.5);
+            z-index: 10;
+        }
+
+        .pipeline-stage.active {
+            background: linear-gradient(135deg, rgba(67, 233, 123, 0.6), rgba(56, 249, 215, 0.6));
+            animation: pulse 1s ease-in-out;
+        }
+
+        .pipeline-stage.processing {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.6), rgba(255, 152, 0, 0.6));
+            border-color: #ffc107;
+        }
+
+        .pipeline-stage.success {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.6), rgba(67, 233, 123, 0.6));
+            border-color: #4caf50;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .stage-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .stage-title {
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .stage-desc {
+            font-size: 0.85rem;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        .stage-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+        }
+
+        .pipeline-arrow {
+            font-size: 2.5rem;
+            color: #43e97b;
+            animation: moveRight 2s ease-in-out infinite;
+        }
+
+        @keyframes moveRight {
+            0%, 100% { transform: translateX(0); opacity: 0.5; }
+            50% { transform: translateX(10px); opacity: 1; }
+        }
+
+        .deploy-button {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            border: none;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            color: #141e30;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(67, 233, 123, 0.4);
+            display: block;
+            margin: 2rem auto;
+        }
+
+        .deploy-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(67, 233, 123, 0.6);
+        }
+
+        .deploy-button:active {
+            transform: translateY(0);
+        }
+
+        /* Tools */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .tool-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.6s ease backwards;
+        }
+
+        .tool-card:nth-child(n) {
+            animation-delay: calc(0.05s * var(--index));
+        }
+
+        .tool-card:hover {
+            transform: translateY(-15px) rotate(5deg);
+            border-color: #f5576c;
+            background: linear-gradient(135deg, rgba(240, 147, 251, 0.2), rgba(245, 87, 108, 0.2));
+            box-shadow: 0 20px 60px rgba(245, 87, 108, 0.4);
+        }
+
+        .tool-logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+        }
+
+        .tool-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+
+        .tool-category {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #141e30 0%, #243b55 100%);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            animation: modalSlideIn 0.4s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px) scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #f5576c;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: #f093fb;
+            transform: rotate(90deg);
+        }
+
+        /* Role */
+        .role-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 3rem;
+            margin: 3rem 0;
+        }
+
+        .role-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .role-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .responsibilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .responsibility-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .responsibility-card:hover {
+            transform: translateY(-10px);
+            background: rgba(240, 147, 251, 0.1);
+            border-color: #f093fb;
+        }
+
+        .resp-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .resp-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            color: #f5576c;
+        }
+
+        .resp-desc {
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        /* Info Panel */
+        .info-panel {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .info-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #f093fb;
+        }
+
+        .info-content {
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .highlight {
+            color: #f5576c;
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .pipeline { flex-direction: column; }
+            .pipeline-arrow { transform: rotate(90deg); }
+            .modal-content { padding: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📈 DevOps Trends & Ecosystem</h1>
+        <p class="subtitle">Explore the evolving landscape of DevOps engineering</p>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showSection('trends')">📊 Market Trends</button>
+            <button class="nav-tab" onclick="showSection('skills')">🎯 Engineer Skills</button>
+            <button class="nav-tab" onclick="showSection('pipeline')">🔄 Delivery Pipeline</button>
+            <button class="nav-tab" onclick="showSection('ecosystem')">🛠️ Tools Ecosystem</button>
+            <button class="nav-tab" onclick="showSection('role')">👤 DevOps Role</button>
+        </div>
+
+        <!-- Market Trends -->
+        <div id="trends" class="section active">
+            <h2 style="text-align: center; font-size: 2.5rem; margin: 2rem 0;">📊 DevOps Market Trends</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🚀</div>
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">Companies Adopting DevOps</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-value">63%</div>
+                    <div class="stat-label">Faster Time to Market</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-value">$120K</div>
+                    <div class="stat-label">Average Salary (US)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-value">19%</div>
+                    <div class="stat-label">YoY Job Growth</div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-title">🌍 Global DevOps Adoption</div>
+                <div class="info-content">
+                    DevOps has evolved from a niche practice to a <span class="highlight">mainstream approach</span> embraced by organizations worldwide. Major drivers include:
+                    <br><br>
+                    <strong>• Cloud Migration:</strong> 94% of enterprises use cloud services, requiring DevOps practices<br>
+                    <strong>• Digital Transformation:</strong> Businesses need rapid software delivery to stay competitive<br>
+                    <strong>• Automation Demand:</strong> Organizations seek to eliminate manual processes<br>
+                    <strong>• Security Integration:</strong> DevSecOps is becoming standard practice<br>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-value">208x</div>
+                    <div class="stat-label">More Frequent Deployments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-value">106x</div>
+                    <div class="stat-label">Faster Lead Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🛡️</div>
+                    <div class="stat-value">7x</div>
+                    <div class="stat-label">Lower Change Failure Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔧</div>
+                    <div class="stat-value">2604x</div>
+                    <div class="stat-label">Faster Recovery Time</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills -->
+        <div id="skills" class="section">
+            <h2 style="text-align: center; font-size: 2.5rem; margin: 2rem 0;">🎯 Essential DevOps Engineer Skills</h2>
+            
+            <div class="skills-container">
+                <div class="skill-category">
+                    <div class="skill-title">💻 Technical Skills</div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 90)">
+                        <div class="skill-name">Linux/Unix Administration</div>
+                        <div class="skill-desc">Command line proficiency, shell scripting, system management</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 85)">
+                        <div class="skill-name">Programming Languages</div>
+                        <div class="skill-desc">Python, Go, Java, JavaScript for automation</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 95)">
+                        <div class="skill-name">Version Control</div>
+                        <div class="skill-desc">Git, GitHub, GitLab workflows and best practices</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 88)">
+                        <div class="skill-name">Containerization</div>
+                        <div class="skill-desc">Docker, Kubernetes, container orchestration</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <div class="skill-title">☁️ Cloud & Infrastructure</div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 92)">
+                        <div class="skill-name">Cloud Platforms</div>
+                        <div class="skill-desc">AWS, Azure, GCP services and architecture</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 87)">
+                        <div class="skill-name">Infrastructure as Code</div>
+                        <div class="skill-desc">Terraform, CloudFormation, Ansible</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 93)">
+                        <div class="skill-name">CI/CD Pipelines</div>
+                        <div class="skill-desc">Jenkins, GitLab CI, GitHub Actions, CircleCI</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 82)">
+                        <div class="skill-name">Configuration Management</div>
+                        <div class="skill-desc">Ansible, Puppet, Chef for system automation</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <div class="skill-title">📊 Monitoring & Security</div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 89)">
+                        <div class="skill-name">Monitoring Tools</div>
+                        <div class="skill-desc">Prometheus, Grafana, ELK Stack, Nagios</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 86)">
+                        <div class="skill-name">Security Practices</div>
+                        <div class="skill-desc">DevSecOps, vulnerability scanning, compliance</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 84)">
+                        <div class="skill-name">Networking</div>
+                        <div class="skill-desc">TCP/IP, DNS, load balancing, firewalls</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 80)">
+                        <div class="skill-name">Database Management</div>
+                        <div class="skill-desc">SQL/NoSQL databases, backup strategies</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <div class="skill-title">🤝 Soft Skills</div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 94)">
+                        <div class="skill-name">Collaboration</div>
+                        <div class="skill-desc">Cross-functional teamwork and communication</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 91)">
+                        <div class="skill-name">Problem Solving</div>
+                        <div class="skill-desc">Troubleshooting and analytical thinking</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 96)">
+                        <div class="skill-name">Continuous Learning</div>
+                        <div class="skill-desc">Staying updated with emerging technologies</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                    <div class="skill-item" onmouseenter="animateProgress(this, 88)">
+                        <div class="skill-name">Documentation</div>
+                        <div class="skill-desc">Clear technical writing and knowledge sharing</div>
+                        <div class="skill-progress"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pipeline -->
+        <div id="pipeline" class="section">
+            <h2 style="text-align: center; font-size: 2.5rem; margin: 2rem 0;">🔄 DevOps Delivery Pipeline</h2>
+            
+            <div class="pipeline-container">
+                <div class="pipeline">
+                    <div class="pipeline-stage" onclick="activateStage(this)">
+                        <div class="stage-icon">💻</div>
+                        <div class="stage-title">Code</div>
+                        <div class="stage-desc">Developers write code</div>
+                        <div class="stage-status"></div>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    
+                    <div class="pipeline-stage" onclick="activateStage(this)">
+                        <div class="stage-icon">🔨</div>
+                        <div class="stage-title">Build</div>
+                        <div class="stage-desc">Compile & package</div>
+                        <div class="stage-status"></div>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    
+                    <div class="pipeline-stage" onclick="activateStage(this)">
+                        <div class="stage-icon">🧪</div>
+                        <div class="stage-title">Test</div>
+                        <div class="stage-desc">Automated testing</div>
+                        <div class="stage-status"></div>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    
+                    <div class="pipeline-stage" onclick="activateStage(this)">
+                        <div class="stage-icon">🚀</div>
+                        <div class="stage-title">Deploy</div>
+                        <div class="stage-desc">Release to production</div>
+                        <div class="stage-status"></div>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    
+                    <div class="pipeline-stage" onclick="activateStage(this)">
+                        <div class="stage-icon">📊</div>
+                        <div class="stage-title">Monitor</div>
+                        <div class="stage-desc">Track performance</div>
+                        <div class="stage-status"></div>
+                    </div>
+                    <div class="pipeline-arrow">→</div>
+                    
+                    <div class="pipeline-stage" onclick="activateStage(this)">
+                        <div class="stage-icon">💬</div>
+                        <div class="stage-title">Feedback</div>
+                        <div class="stage-desc">Continuous improvement</div>
+                        <div class="stage-status"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="deploy-button" onclick="startDeployment()">🚀 Start Live Deployment</button>
+
+            <div class="info-panel">
+                <div class="info-title">⚡ Automated Pipeline Benefits</div>
+                <div class="info-content">
+                    A well-designed CI/CD pipeline enables:
+                    <br><br>
+                    <strong>• Rapid Delivery:</strong> Deploy multiple times per day instead of weeks/months<br>
+                    <strong>• Quality Assurance:</strong> Automated tests catch bugs before production<br>
+                    <strong>• Rollback Capability:</strong> Quick recovery from failed deployments<br>
+                    <strong>• Consistency:</strong> Same process for all environments<br>
+                    <strong>• Developer Productivity:</strong> Focus on coding, not deployment logistics<br>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ecosystem -->
+        <div id="ecosystem" class="section">
+            <h2 style="text-align: center; font-size: 2.5rem; margin: 2rem 0;">🛠️ DevOps Tools Ecosystem</h2>
+            
+            <div class="tools-grid">
+                <div class="tool-card" style="--index: 1" onclick="showToolInfo('Jenkins', '🔧', 'CI/CD', 'Open-source automation server for building, testing, and deploying code. Supports 1800+ plugins for integration.')">
+                    <div class="tool-logo">🔧</div>
+                    <div class="tool-name">Jenkins</div>
+                    <div class="tool-category">CI/CD</div>
+                </div>
+                <div class="tool-card" style="--index: 2" onclick="showToolInfo('Docker', '🐳', 'Containerization', 'Platform for developing, shipping, and running applications in containers. Ensures consistency across environments.')">
+                    <div class="tool-logo">🐳</div>
+                    <div class="tool-name">Docker</div>
+                    <div class="tool-category">Containerization</div>
+                </div>
+                <div class="tool-card" style="--index: 3" onclick="showToolInfo('Kubernetes', '☸️', 'Orchestration', 'Container orchestration system for automating deployment, scaling, and management of containerized applications.')">
+                    <div class="tool-logo">☸️</div>
+                    <div class="tool-name">Kubernetes</div>
+                    <div class="tool-category">Orchestration</div>
+                </div>
+                <div class="tool-card" style="--index: 4" onclick="showToolInfo('Ansible', '🤖', 'Configuration', 'Agentless automation tool for configuration management, application deployment, and task automation.')">
+                    <div class="tool-logo">🤖</div>
+                    <div class="tool-name">Ansible</div>
+                    <div class="tool-category">Configuration</div>
+                </div>
+                <div class="tool-card" style="--index: 5" onclick="showToolInfo('Terraform', '🏗️', 'Infrastructure as Code', 'Infrastructure as Code tool for building, changing, and versioning infrastructure safely and efficiently.')">
+                    <div class="tool-logo">🏗️</div>
+                    <div class="tool-name">Terraform</div>
+                    <div class="tool-category">Infrastructure as Code</div>
+                </div>
+                <div class="tool-card" style="--index: 6" onclick="showToolInfo('Git', '🔀', 'Version Control', 'Distributed version control system for tracking changes in source code during software development.')">
+                    <div class="tool-logo">🔀</div>
+                    <div class="tool-name">Git</div>
+                    <div class="tool-category">Version Control</div>
+                </div>
+                <div class="tool-card" style="--index: 7" onclick="showToolInfo('Prometheus', '📊', 'Monitoring', 'Open-source monitoring system with a dimensional data model, flexible query language, and time series database.')">
+                    <div class="tool-logo">📊</div>
+                    <div class="tool-name">Prometheus</div>
+                    <div class="tool-category">Monitoring</div>
+                </div>
+                <div class="tool-card" style="--index: 8" onclick="showToolInfo('Grafana', '📈', 'Visualization', 'Multi-platform analytics and interactive visualization web application for creating dashboards from time series data.')">
+                    <div class="tool-logo">📈</div>
+                    <div class="tool-name">Grafana</div>
+                    <div class="tool-category">Visualization</div>
+                </div>
+                <div class="tool-card" style="--index: 9" onclick="showToolInfo('Nagios', '🔔', 'Monitoring', 'Powerful monitoring system for identifying and resolving IT infrastructure problems before they affect critical business processes.')">
+                    <div class="tool-logo">🔔</div>
+                    <div class="tool-name">Nagios</div>
+                    <div class="tool-category">Monitoring</div>
+                </div>
+                <div class="tool-card" style="--index: 10" onclick="showToolInfo('Maven', '📦', 'Build Management', 'Build automation and project management tool primarily for Java projects with dependency management capabilities.')">
+                    <div class="tool-logo">📦</div>
+                    <div class="tool-name">Maven</div>
+                    <div class="tool-category">Build Management</div>
+                </div>
+            </div>
+
+            <div id="tool-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-modal" onclick="closeToolModal()">&times;</span>
+                    <div id="modal-body"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role -->
+        <div id="role" class="section">
+            <div class="role-container">
+                <div class="role-header">
+                    <h2 class="role-title">👤 DevOps Engineer Role</h2>
+                    <p style="font-size: 1.2rem; opacity: 0.9;">Bridge between development and operations teams</p>
+                </div>
+
+                <div class="responsibilities-grid">
+                    <div class="responsibility-card">
+                        <div class="resp-icon">🔄</div>
+                        <div class="resp-title">Pipeline Management</div>
+                        <div class="resp-desc">Design and maintain CI/CD pipelines for automated builds, tests, and deployments</div>
+                    </div>
+                    <div class="responsibility-card">
+                        <div class="resp-icon">☁️</div>
+                        <div class="resp-title">Infrastructure Management</div>
+                        <div class="resp-desc">Provision and manage cloud infrastructure using IaC tools</div>
+                    </div>
+                    <div class="responsibility-card">
+                        <div class="resp-icon">📊</div>
+                        <div class="resp-title">Monitoring & Logging</div>
+                        <div class="resp-desc">Implement monitoring solutions and analyze system metrics</div>
+                    </div>
+                    <div class="responsibility-card">
+                        <div class="resp-icon">🛡️</div>
+                        <div class="resp-title">Security & Compliance</div>
+                        <div class="resp-desc">Integrate security practices and ensure regulatory compliance</div>
+                    </div>
+                    <div class="responsibility-card">
+                        <div class="resp-icon">🤝</div>
+                        <div class="resp-title">Team Collaboration</div>
+                        <div class="resp-desc">Work with developers and operations to improve workflows</div>
+                    </div>
+                    <div class="responsibility-card">
+                        <div class="resp-icon">🚨</div>
+                        <div class="resp-title">Incident Response</div>
+                        <div class="resp-desc">Troubleshoot issues and implement solutions to prevent recurrence</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Section Navigation
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.nav-tab[onclick="showSection('${id}')"]`).classList.add('active');
+
+            // Start animations based on section
+            if (id === 'trends') {
+                animateStats();
+            } else if (id === 'pipeline') {
+                startPipelineAnimation();
+            }
+        }
+
+        // Animated Stats Counter
+        function animateStats() {
+            const stats = document.querySelectorAll('.stat-value');
+            stats.forEach(stat => {
+                const text = stat.textContent;
+                const isPercent = text.includes('%');
+                const isDollar = text.includes('$');
+                const isMultiplier = text.includes('x');
+                
+                let target = parseFloat(text.replace(/[^0-9.]/g, ''));
+                let current = 0;
+                const increment = target / 50;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    let display = Math.floor(current);
+                    if (isDollar) display = '$' + display + 'K';
+                    else if (isPercent) display = display + '%';
+                    else if (isMultiplier) display = display + 'x';
+                    stat.textContent = display;
+                }, 30);
+            });
+        }
+
+        // Pipeline Animation
+        let pipelineInterval;
+        function startPipelineAnimation() {
+            clearInterval(pipelineInterval);
+            const stages = document.querySelectorAll('.pipeline-stage');
+            let currentStage = 0;
+            
+            function activateNext() {
+                stages.forEach(s => s.classList.remove('active'));
+                stages[currentStage].classList.add('active');
+                currentStage = (currentStage + 1) % stages.length;
+            }
+            
+            activateNext();
+            pipelineInterval = setInterval(activateNext, 2000);
+        }
+
+        function activateStage(el) {
+            clearInterval(pipelineInterval);
+            document.querySelectorAll('.pipeline-stage').forEach(stage => stage.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // Live Deployment Simulator
+        let deploymentRunning = false;
+
+        async function startDeployment() {
+            if (deploymentRunning) return;
+            
+            deploymentRunning = true;
+            clearInterval(pipelineInterval);
+            
+            const stages = document.querySelectorAll('.pipeline-stage');
+            
+            // Reset all stages
+            stages.forEach(stage => {
+                stage.classList.remove('active', 'processing', 'success', 'error');
+                const statusEl = stage.querySelector('.stage-status');
+                if (statusEl) {
+                    statusEl.textContent = '';
+                }
+            });
+            
+            const stageData = [
+                { name: 'Code', duration: 1000, status: '✓' },
+                { name: 'Build', duration: 1500, status: '✓' },
+                { name: 'Test', duration: 2000, status: '✓' },
+                { name: 'Deploy', duration: 1800, status: '✓' },
+                { name: 'Monitor', duration: 1200, status: '✓' },
+                { name: 'Feedback', duration: 1000, status: '✓' }
+            ];
+            
+            // Process each stage
+            for (let i = 0; i < stages.length; i++) {
+                const stage = stages[i];
+                const data = stageData[i];
+                
+                // Start processing
+                stage.classList.add('processing', 'active');
+                const statusEl = stage.querySelector('.stage-status');
+                if (statusEl) {
+                    statusEl.textContent = '⏳';
+                }
+                
+                // Simulate work
+                await new Promise(resolve => setTimeout(resolve, data.duration));
+                
+                // Complete stage
+                stage.classList.remove('processing');
+                stage.classList.add('success');
+                if (statusEl) {
+                    statusEl.textContent = data.status;
+                }
+                
+                // Slight pause between stages
+                await new Promise(resolve => setTimeout(resolve, 300));
+                stage.classList.remove('active');
+            }
+            
+            // Celebration animation
+            stages.forEach((stage, i) => {
+                setTimeout(() => {
+                    stage.classList.add('active');
+                    setTimeout(() => stage.classList.remove('active'), 200);
+                }, i * 100);
+            });
+            
+            deploymentRunning = false;
+        }
+
+        // Skill Progress Animation
+        function animateProgress(element, percentage) {
+            const progressBar = element.querySelector('.skill-progress');
+            if (progressBar) {
+                progressBar.style.width = percentage + '%';
+            }
+        }
+
+        // Tool Modal
+        function showToolInfo(name, icon, category, description) {
+            const modal = document.getElementById('tool-modal');
+            const modalBody = document.getElementById('modal-body');
+            
+            modalBody.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="font-size: 6rem; margin-bottom: 1rem;">${icon}</div>
+                    <h2 style="font-size: 2.5rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #f093fb, #f5576c); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${name}</h2>
+                    <div style="display: inline-block; background: rgba(245, 87, 108, 0.2); padding: 0.5rem 1.5rem; border-radius: 20px; margin-bottom: 2rem; font-weight: 600;">${category}</div>
+                    <p style="font-size: 1.2rem; line-height: 1.8; margin-bottom: 2rem;">${description}</p>
+                    <button onclick="closeToolModal()" style="background: linear-gradient(135deg, #f093fb, #f5576c); border: none; padding: 1rem 3rem; border-radius: 50px; color: white; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">Got it!</button>
+                </div>
+            `;
+            
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function closeToolModal() {
+            const modal = document.getElementById('tool-modal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        // Click outside modal to close
+        window.onclick = function(event) {
+            const modal = document.getElementById('tool-modal');
+            if (event.target === modal) {
+                closeToolModal();
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (document.getElementById('trends').classList.contains('active')) {
+                    animateStats();
+                }
+                startPipelineAnimation();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

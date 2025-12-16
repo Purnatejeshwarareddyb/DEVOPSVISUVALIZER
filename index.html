@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DevOps Visualizer — Dashboard</title>
+  <style>
+    :root{
+      --bg:#0f1724; --panel:#0b1220; --muted:#98a2b3;
+      --accent:#00c8ff; --card:#0f1724; --glass: rgba(255,255,255,0.03);
+      --highlight: linear-gradient(90deg,#0ea5ff,#7c3aed);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; font-family:Inter,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:#e6eef8;}
+    .app {display:flex; height:100vh; overflow:hidden;}
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 300px;
+      min-width:220px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-right:1px solid rgba(255,255,255,0.04);
+      padding:28px 20px;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+    .brand {
+      display:flex; align-items:center; gap:12px;
+    }
+    .brand .logo {
+      width:44px; height:44px; border-radius:10px;
+      background:var(--highlight); display:flex; align-items:center; justify-content:center;
+      font-weight:700; color:#021025; box-shadow:0 6px 18px rgba(12,18,30,0.6);
+    }
+    .brand h1 {font-size:16px; margin:0; letter-spacing:0.2px}
+    .brand p {margin:0; font-size:12px; color:var(--muted)}
+
+    .sidebar-title { margin-top:8px; font-weight:700; font-size:13px; color:#cfe9ff; display:flex; align-items:center; gap:8px;}
+    .syllabus-list { margin-top:6px; display:flex; flex-direction:column; gap:6px; }
+
+    .unit-item {
+      padding:10px 12px; border-radius:8px; cursor:pointer;
+      display:flex; align-items:center; gap:10px; color: #cfe9ff;
+      transition: all .18s ease;
+      border:1px solid transparent;
+      background: transparent;
+    }
+    .unit-item small { color:var(--muted); font-size:12px; margin-left:auto }
+    .unit-item:hover { transform:translateX(6px); background:var(--glass); border-color:rgba(255,255,255,0.03) }
+
+    .unit-item.active {
+      background: linear-gradient(90deg, rgba(14,165,255,0.12), rgba(124,58,237,0.08));
+      border:1px solid rgba(14,165,255,0.18);
+      box-shadow: 0 8px 30px rgba(7,12,20,0.6);
+      transform:none;
+    }
+
+    .unit-meta { display:flex; gap:12px; align-items:center; }
+    .unit-icon { width:36px; height:36px; border-radius:8px; display:grid; place-items:center; background:rgba(255,255,255,0.03); font-size:18px }
+
+    .sidebar-footer { margin-top:auto; font-size:12px; color:var(--muted) }
+
+    /* MAIN PANEL */
+    .main {
+      flex:1; display:flex; flex-direction:column; gap:0; min-width:0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+    }
+
+    .topbar {
+      height:72px; display:flex; align-items:center; justify-content:space-between;
+      padding:0 20px;
+      border-bottom:1px solid rgba(255,255,255,0.03);
+      background: linear-gradient(180deg, rgba(0,0,0,0.04), rgba(255,255,255,0.00));
+    }
+
+    .top-left { display:flex; gap:16px; align-items:center;}
+    .page-title { font-size:18px; font-weight:700; color:#e9f5ff; }
+
+    /* Learn dropdown */
+    .learn-wrap { position:relative; }
+    .learn-btn {
+      display:flex; gap:10px; align-items:center; padding:10px 14px; border-radius:10px;
+      background: linear-gradient(90deg,#ff7a18,#af3afc); border:none; color:#041220; font-weight:700; cursor:pointer;
+      box-shadow:0 8px 30px rgba(124,58,237,0.12);
+    }
+    .learn-menu {
+      position:absolute; right:0; top:56px; min-width:240px; background:var(--card); border-radius:10px;
+      border:1px solid rgba(255,255,255,0.04); box-shadow:0 14px 48px rgba(2,6,23,0.6); padding:8px; display:none;
+      z-index:40;
+    }
+    .learn-menu.visible { display:block; }
+    .learn-menu a { display:block; padding:10px 12px; color:#dff6ff; text-decoration:none; border-radius:8px; transition:all .12s;}
+    .learn-menu a:hover { background: rgba(255,255,255,0.02); transform:translateX(6px) }
+
+    /* iframe area */
+    .content {
+      flex:1; min-height:0; display:flex; flex-direction:column;
+    }
+    .iframe-wrap { flex:1; padding:18px; min-height:0; }
+    iframe.viewer {
+      width:100%; height:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.03);
+      background:#fff; box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+    }
+
+    /* small screens */
+    @media (max-width:900px){
+      .sidebar{ width:100%; height:auto; position:relative; display:flex; flex-direction:row; gap:10px; overflow-x:auto; padding:12px; }
+      .app { flex-direction:column; }
+      .main { min-height: calc(100vh - 110px); }
+      .learn-menu { right:10px; top:64px; left:auto; }
+      .sidebar-title { display:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" aria-label="Syllabus Sidebar">
+      <div class="brand">
+        <div class="logo">DV</div>
+        <div>
+          <h1 style="font-size:15px; margin:0">DevOps Visualizer</h1>
+          <p style="margin:0; font-size:12px; color:var(--muted)">Interactive learning dashboard</p>
+        </div>
+      </div>
+
+      <div class="sidebar-title">📚 Syllabus</div>
+
+      <nav class="syllabus-list" id="syllabusList" role="navigation" aria-label="Syllabus list">
+        <!-- items injected by JS -->
+      </nav>
+
+      <div class="sidebar-footer">
+        Tip: Click a unit to load it here. Use <strong>Learn</strong> for quick links.
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="topbar">
+        <div class="top-left">
+          <div class="page-title" id="pageTitle">Welcome — DevOps Visualizer</div>
+        </div>
+
+        <div class="top-right" style="display:flex; align-items:center; gap:12px;">
+          <div class="learn-wrap">
+            <button class="learn-btn" id="learnBtn" aria-haspopup="true" aria-expanded="false">💥 Learn</button>
+            <div class="learn-menu" id="learnMenu" role="menu" aria-hidden="true">
+              <!-- links will be injected -->
+            </div>
+          </div>
+
+          <button id="darkToggle" title="Toggle theme" style="padding:8px 12px; border-radius:8px; border:none; cursor:pointer; background:rgba(255,255,255,0.03); color:#e6f8ff">🌙</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="iframe-wrap">
+          <iframe src="" class="viewer" id="viewer" title="Unit viewer">
+            <!-- fallback -->
+          </iframe>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    /*************** Configuration ***************/
+    const units = [
+      { id:'Unit1', title:'Unit 1 — DevOps Concepts', file:'unit1_devops_concepts.html', icon:'⚙️' },
+      { id:'Unit2', title:'Unit 2 — Linux & Cloud', file:'unit2_linux_terminal.html', icon:'☁️' },
+      { id:'Unit3', title:'Unit 3 — Git Basics', file:'unit3_git_basics.html', icon:'🔄' },
+      { id:'Unit4', title:'Unit 4 — Git Advanced', file:'unit4_git_advanced.html', icon:'🧪' },
+      { id:'Unit5', title:'Unit 5 — DevOps Trends', file:'unit5_devops_trends.html', icon:'🚀' },
+      { id:'Unit6', title:'Unit 6 — Maven Lifecycle', file:'unit6_maven_lifecycle.html', icon:'📦' }
+    ];
+
+    const syllabusList = document.getElementById('syllabusList');
+    const learnMenu = document.getElementById('learnMenu');
+    const viewer = document.getElementById('viewer');
+    const pageTitle = document.getElementById('pageTitle');
+    const learnBtn = document.getElementById('learnBtn');
+
+    /*************** Build sidebar items ***************/
+    function createSidebar(){
+      units.forEach((u, idx) => {
+        const item = document.createElement('div');
+        item.className = 'unit-item';
+        item.dataset.unit = u.id;
+        item.innerHTML = `
+          <div class="unit-meta">
+            <div class="unit-icon">${u.icon}</div>
+            <div>
+              <div style="font-weight:700">${u.title.split('—')[0]}</div>
+              <div style="font-size:12px;color:var(--muted)">${u.title.split('—')[1] ? u.title.split('—')[1].trim() : ''}</div>
+            </div>
+          </div>
+          <small>Open</small>
+        `;
+        item.addEventListener('click', () => showSyllabus(u.id));
+
+        syllabusList.appendChild(item);
+
+        // learn menu link
+        const link = document.createElement('a');
+        link.href = '#';
+        link.dataset.unit = u.id;
+        link.textContent = u.title;
+        link.addEventListener('click', (e) => { e.preventDefault(); loadUnit(u.id); toggleLearn(false); });
+        learnMenu.appendChild(link);
+      });
+    }
+
+    /*************** Load unit into iframe and highlight ***************/
+    function loadUnit(unitId){
+      const unit = units.find(u => u.id === unitId);
+      if(!unit) return;
+      // set iframe src
+      viewer.src = unit.file;
+
+      // update page title
+      pageTitle.textContent = unit.title;
+
+      // highlight sidebar
+      document.querySelectorAll('.unit-item').forEach(it => it.classList.remove('active'));
+      const el = document.querySelector(`.unit-item[data-unit="${unitId}"]`);
+      if(el) el.classList.add('active');
+
+      // ensure learn menu hidden
+      toggleLearn(false);
+    }
+    function showSyllabus(unitId){
+        const unit = units.find(u => u.id === unitId);
+  if(!unit) return;
+
+  // Update page title
+  pageTitle.textContent = unit.title;
+
+  // Highlight the sidebar unit
+  document.querySelectorAll('.unit-item').forEach(it => it.classList.remove('active'));
+  const el = document.querySelector(`.unit-item[data-unit="${unitId}"]`);
+  if(el) el.classList.add('active');
+
+  // Prepare topics content
+  let topicsHTML = '';
+  switch(unitId){
+    case 'Unit1':
+      topicsHTML = `
+        <p>Covers DevOps culture, lifecycle, principles, and SDLC evolution.</p>
+        <ul>
+          <li>Traditional SDLC vs DevOps</li>
+          <li>DevOps Principles</li>
+          <li>DevOps Lifecycle</li>
+          <li>DevOps Culture & Roles</li>
+          <li>CI/CD Basics</li>
+          <li>Infrastructure as Code Introduction</li>
+        </ul>`;
+      break;
+    case 'Unit2':
+      topicsHTML = `
+        <p>Learn Linux commands, cloud fundamentals, and environments.</p>
+        <ul>
+          <li>Linux File System</li>
+          <li>User & Permission Management</li>
+          <li>Package Managers</li>
+          <li>Basic Shell Scripting</li>
+          <li>SSH, SCP, Networking Basics</li>
+          <li>Intro to Cloud (IaaS, PaaS, SaaS)</li>
+          <li>AWS EC2, S3, IAM Overview</li>
+        </ul>`;
+      break;
+    case 'Unit3':
+      topicsHTML = `
+        <p>Complete Git version control workflow.</p>
+        <ul>
+          <li>What is Git?</li>
+          <li>Git Installation</li>
+          <li>git init, add, commit</li>
+          <li>git status, log</li>
+          <li>Branching basics</li>
+          <li>Merging basics</li>
+          <li>GitHub basics</li>
+        </ul>`;
+      break;
+    case 'Unit4':
+      topicsHTML = `
+        <p>Covers full industry-standard Git workflow.</p>
+        <ul>
+          <li>Git Branch model</li>
+          <li>Feature branching</li>
+          <li>Pull Requests</li>
+          <li>Merge Conflicts</li>
+          <li>Rebasing</li>
+          <li>Cherry-pick</li>
+          <li>Gitflow Workflow</li>
+        </ul>`;
+      break;
+    case 'Unit5':
+      topicsHTML = `
+        <p>Overview of major tools used in DevOps pipelines.</p>
+        <ul>
+          <li>Containerization (Docker)</li>
+          <li>Container Orchestration (Kubernetes)</li>
+          <li>CI/CD Tools (Jenkins, GitHub Actions)</li>
+          <li>Monitoring (Prometheus, Grafana)</li>
+          <li>Config Management (Ansible, Puppet)</li>
+          <li>Logging (ELK Stack)</li>
+        </ul>`;
+      break;
+    case 'Unit6':
+      topicsHTML = `
+        <p>Learn about Maven architecture, lifecycle and plugins.</p>
+        <ul>
+          <li>Maven Architecture</li>
+          <li>Project Object Model (POM.xml)</li>
+          <li>Build Phases: Clean, Validate, Compile, Test, Package, Verify, Install, Deploy</li>
+          <li>Maven Plugins & Dependencies</li>
+        </ul>`;
+      break;
+  }
+
+  // Show in iframe
+  const doc = viewer.contentDocument || viewer.contentWindow.document;
+  doc.open();
+  doc.write(`<div style="padding:30px;font-family:Arial,sans-serif;color:#072134;">
+               <h2>${unit.title}</h2>
+               ${topicsHTML}
+             </div>`);
+  doc.close();
+
+  // Ensure learn menu is hidden
+  toggleLearn(false);
+}
+
+    
+    
+     
+    /*************** Learn menu toggle ***************/
+    function toggleLearn(forceState){
+      const isVisible = learnMenu.classList.contains('visible');
+      const next = typeof forceState === 'boolean' ? forceState : !isVisible;
+      if(next){
+        learnMenu.classList.add('visible');
+        learnBtn.setAttribute('aria-expanded','true');
+        learnMenu.setAttribute('aria-hidden','false');
+      } else {
+        learnMenu.classList.remove('visible');
+        learnBtn.setAttribute('aria-expanded','false');
+        learnMenu.setAttribute('aria-hidden','true');
+      }
+    }
+    learnBtn.addEventListener('click', () => toggleLearn());
+
+    // close learn menu clicking outside
+    document.addEventListener('click', (e) => {
+      if(!e.target.closest('.learn-wrap') && !e.target.closest('.learn-btn')){
+        toggleLearn(false);
+      }
+    });
+
+    /*************** Dark toggle (simple) ***************/
+    const darkToggle = document.getElementById('darkToggle');
+    let dark = true;
+    darkToggle.addEventListener('click', () => {
+      dark = !dark;
+      if(!dark){
+        document.documentElement.style.setProperty('--bg','#f7fafc');
+        document.documentElement.style.setProperty('--panel','#ffffff');
+        document.documentElement.style.setProperty('--card','#ffffff');
+        document.documentElement.style.setProperty('--muted','#334155');
+        document.documentElement.style.setProperty('--accent','#0ea5ff');
+        document.body.style.color = '#0b1220';
+        darkToggle.textContent = '☀️';
+      } else {
+        document.documentElement.style.setProperty('--bg','#0f1724');
+        document.documentElement.style.setProperty('--panel','#0b1220');
+        document.documentElement.style.setProperty('--card','#0f1724');
+        document.documentElement.style.setProperty('--muted','#98a2b3');
+        document.documentElement.style.setProperty('--accent','#00c8ff');
+        document.body.style.color = '#e6eef8';
+        darkToggle.textContent = '🌙';
+      }
+    });
+
+    /*************** Keyboard: Esc closes learn menu ***************/
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape') toggleLearn(false);
+    });
+
+    /*************** Initialization ***************/
+    createSidebar();
+    // Optionally load first unit on start
+    loadUnit('Unit1');
+
+    // If iframe fails to load (file not present), show fallback message inside iframe
+    viewer.addEventListener('load', () => {
+      try {
+        const doc = viewer.contentDocument || viewer.contentWindow.document;
+        if(doc.body.innerHTML.trim() === ''){
+          doc.open();
+          doc.write(`<div style="font-family:Arial,sans-serif;padding:30px;color:#072134;background:#fff;"> <h2 style="color:#072134">Unit file not found</h2><p>The unit HTML file could not be loaded. Make sure <code>${viewer.src}</code> exists in the same folder as this index.html.</p></div>`);
+          doc.close();
+        }
+      } catch(err){
+        /* cross-origin or permissions — ignore (file likely loaded) */
+      }
+    });
+  </script>
+</body>
+</html>

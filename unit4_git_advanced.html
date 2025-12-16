@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Workflow Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 3rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .git-visualization {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 3rem;
+            min-height: 500px;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .branch-container {
+            position: relative;
+            min-height: 400px;
+        }
+
+        .branch {
+            position: relative;
+            margin: 2rem 0;
+            padding-left: 3rem;
+        }
+
+        .branch-name {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .commit-line {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-left: 6rem;
+        }
+
+        .commit {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: popIn 0.5s ease backwards;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .commit:hover {
+            transform: scale(1.2);
+            z-index: 10;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .commit-icon {
+            font-size: 2rem;
+        }
+
+        .commit-id {
+            font-size: 0.7rem;
+            margin-top: 0.3rem;
+        }
+
+        .commit::after {
+            content: '';
+            position: absolute;
+            right: -2rem;
+            width: 2rem;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .commit:last-child::after {
+            display: none;
+        }
+
+        .merge-arrow {
+            position: absolute;
+            width: 3px;
+            background: linear-gradient(180deg, #43e97b, #38f9d7);
+            animation: growDown 1s ease;
+        }
+
+        @keyframes growDown {
+            from { height: 0; }
+            to { height: 100%; }
+        }
+
+        .command-console {
+            background: #1e1e1e;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            font-family: 'Courier New', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .console-line {
+            margin: 0.5rem 0;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .console-prompt {
+            color: #4CAF50;
+        }
+
+        .console-command {
+            color: #FFD700;
+        }
+
+        .console-output {
+            color: #87CEEB;
+            margin-left: 1rem;
+        }
+
+        .info-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .info-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #FFD700;
+        }
+
+        .info-content {
+            line-height: 1.8;
+            opacity: 0.9;
+        }
+
+        .git-stages {
+            display: flex;
+            justify-content: space-around;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .stage {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .stage:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stage-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .stage-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .stage-desc {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .arrow-right {
+            font-size: 3rem;
+            opacity: 0.5;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+
+        .git-commands {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .command-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .command-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .command-name {
+            font-family: 'Courier New', monospace;
+            color: #FFD700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .command-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .commit-line { flex-wrap: wrap; }
+            .git-stages { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔀 Git Workflow Visualizer</h1>
+        <p class="subtitle">Interactive visualization of Git commands and workflows</p>
+
+        <div class="controls">
+            <button class="btn" onclick="showSection('lifecycle')">
+                <span>♻️</span> Git Lifecycle
+            </button>
+            <button class="btn" onclick="showSection('workflow')">
+                <span>🌲</span> Branch Workflow
+            </button>
+            <button class="btn" onclick="showSection('commands')">
+                <span>⚡</span> Git Commands
+            </button>
+            <button class="btn" onclick="showSection('advanced')">
+                <span>🚀</span> Advanced Git
+            </button>
+        </div>
+
+        <!-- Git Lifecycle Section -->
+        <div id="lifecycle" class="section">
+            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 2rem;">📂 Git Lifecycle</h2>
+            <div class="git-stages">
+                <div class="stage">
+                    <div class="stage-icon">📝</div>
+                    <div class="stage-name">Working Directory</div>
+                    <div class="stage-desc">Make changes to your files</div>
+                </div>
+                <div class="arrow-right">→</div>
+                <div class="stage">
+                    <div class="stage-icon">📦</div>
+                    <div class="stage-name">Staging Area</div>
+                    <div class="stage-desc">Stage files with git add</div>
+                </div>
+                <div class="arrow-right">→</div>
+                <div class="stage">
+                    <div class="stage-icon">💾</div>
+                    <div class="stage-name">Local Repository</div>
+                    <div class="stage-desc">Commit with git commit</div>
+                </div>
+                <div class="arrow-right">→</div>
+                <div class="stage">
+                    <div class="stage-icon">☁️</div>
+                    <div class="stage-name">Remote Repository</div>
+                    <div class="stage-desc">Push with git push</div>
+                </div>
+            </div>
+
+            <div class="command-console" id="lifecycleConsole">
+                <div class="console-line">
+                    <span class="console-prompt">user@devops:~/project$</span>
+                    <span class="console-command"> git init</span>
+                </div>
+                <div class="console-line">
+                    <span class="console-output">Initialized empty Git repository in /home/user/project/.git/</span>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-title">🎯 Understanding the Git Lifecycle</div>
+                <div class="info-content">
+                    <strong>Working Directory:</strong> Your local files where you make changes<br><br>
+                    <strong>Staging Area (Index):</strong> A preparation area for your commits. Use <code>git add</code> to stage changes<br><br>
+                    <strong>Local Repository:</strong> Your local .git directory containing commit history. Use <code>git commit</code> to save changes<br><br>
+                    <strong>Remote Repository:</strong> Server-hosted repository (GitHub, GitLab). Use <code>git push</code> to upload changes
+                </div>
+            </div>
+        </div>
+
+        <!-- Workflow Section -->
+        <div id="workflow" class="section" style="display: none;">
+            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 2rem;">🌲 Branch Workflow</h2>
+            
+            <div class="controls">
+                <button class="btn" onclick="addCommit('main')">
+                    <span>➕</span> Commit to Main
+                </button>
+                <button class="btn" onclick="createBranch()">
+                    <span>🌿</span> Create Feature Branch
+                </button>
+                <button class="btn" onclick="addCommit('feature')">
+                    <span>➕</span> Commit to Feature
+                </button>
+                <button class="btn" onclick="mergeBranch()">
+                    <span>🔀</span> Merge Feature
+                </button>
+                <button class="btn" onclick="resetWorkflow()">
+                    <span>🔄</span> Reset
+                </button>
+            </div>
+
+            <div class="git-visualization">
+                <div class="branch-container" id="branchContainer">
+                    <div class="branch" id="mainBranch">
+                        <div class="branch-name">main</div>
+                        <div class="commit-line" id="mainCommits">
+                            <div class="commit">
+                                <span class="commit-icon">📍</span>
+                                <span class="commit-id">init</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="command-console" id="workflowConsole">
+                <div class="console-line">
+                    <span class="console-output">Git workflow initialized. Click buttons above to interact!</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Commands Section -->
+        <div id="commands" class="section" style="display: none;">
+            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 2rem;">⚡ Essential Git Commands</h2>
+            
+            <div class="git-commands">
+                <div class="command-card" onclick="runGitCommand('init')">
+                    <div class="command-name">git init</div>
+                    <div class="command-desc">Initialize a new Git repository</div>
+                </div>
+                <div class="command-card" onclick="runGitCommand('clone')">
+                    <div class="command-name">git clone &lt;url&gt;</div>
+                    <div class="command-desc">Clone a remote repository</div>
+                </div>
+                <div class="command-card" onclick="runGitCommand('add')">
+                    <div class="command-name">git add .</div>
+                    <div class="command-desc">Stage all changes for commit</div>
+                </div>
+                <div class="command-card" onclick="runGitCommand('commit')">
+                    <div class="command-name">git commit -m "message"</div>
+                    <div class="command-desc">Commit staged changes</div>
+                </div>
+                <div class="command-card" onclick="runGitCommand('status')">
+                    <div class="command-name">git status</div>
+                    <div class="command-desc">Check repository status</div>
+                </div>
+                <div class="command-card" onclick="runGitCommand('push')">
+                    <div class="command-name">git push origin main</div>
+                    <div class="command-desc">Push commits to remote</div>
+                </div>
+                <div class="command-card" onclick="runGitCommand('pull')">
+                    <div class="command-name">git pull</div>
+                    <div class="command-desc">Fetch and merge remote changes</div>
+                </div>
+                <div class="command-card" onclick="runGitCommand('branch')">
+                    <div class="command-name">git branch &lt;name&gt;</div>
+                    <div class="command-desc">Create a new branch</div>
+                </div>
+                <div class="command-card" onclick="runGitCommand('checkout')">
+                    <div class="command-name">git checkout &lt;branch&gt;</div>
+                    <div class="command-desc">Switch to a branch</div>
+                </div>
+                <div class="command-card" onclick="runGitCommand('merge')">
+                    <div class="command-name">git merge &lt;branch&gt;</div>
+                    <div class="command-desc">Merge branch into current branch</div>
+                </div>
+                <div class="command-card" onclick="runGitCommand('log')">
+                    <div class="command-name">git log</div>
+                    <div class="command-desc">View commit history</div>
+                </div>
+                <div class="command-card" onclick="runGitCommand('remote')">
+                    <div class="command-name">git remote add origin &lt;url&gt;</div>
+                    <div class="command-desc">Add remote repository</div>
+                </div>
+            </div>
+
+            <div class="command-console" id="commandConsole"></div>
+        </div>
+
+        <!-- Advanced Section -->
+        <div id="advanced" class="section" style="display: none;">
+            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 2rem;">🚀 Advanced Git Operations</h2>
+            
+            <div class="git-commands">
+                <div class="command-card" onclick="runAdvancedCommand('rebase')">
+                    <div class="command-name">git rebase</div>
+                    <div class="command-desc">Rewrite commit history for cleaner timeline</div>
+                </div>
+                <div class="command-card" onclick="runAdvancedCommand('stash')">
+                    <div class="command-name">git stash</div>
+                    <div class="command-desc">Temporarily save uncommitted changes</div>
+                </div>
+                <div class="command-card" onclick="runAdvancedCommand('tag')">
+                    <div class="command-name">git tag v1.0.0</div>
+                    <div class="command-desc">Create version tags for releases</div>
+                </div>
+                <div class="command-card" onclick="runAdvancedCommand('diff')">
+                    <div class="command-name">git diff</div>
+                    <div class="command-desc">Show differences between commits</div>
+                </div>
+                <div class="command-card" onclick="runAdvancedCommand('cherry-pick')">
+                    <div class="command-name">git cherry-pick</div>
+                    <div class="command-desc">Apply specific commit to current branch</div>
+                </div>
+                <div class="command-card" onclick="runAdvancedCommand('reset')">
+                    <div class="command-name">git reset</div>
+                    <div class="command-desc">Undo commits (soft/mixed/hard)</div>
+                </div>
+            </div>
+
+            <div class="command-console" id="advancedConsole"></div>
+
+            <div class="info-panel">
+                <div class="info-title">💡 Pro Tips</div>
+                <div class="info-content">
+                    <strong>Rebase vs Merge:</strong> Rebase creates a linear history, merge preserves branch structure<br><br>
+                    <strong>Stashing:</strong> Perfect for switching branches without committing incomplete work<br><br>
+                    <strong>Tags:</strong> Use semantic versioning (v1.0.0) for releases<br><br>
+                    <strong>Interactive Rebase:</strong> Use <code>git rebase -i</code> to edit, squash, or reorder commits
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let commitCount = 1;
+        let featureBranchCreated = false;
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        function addCommit(branch) {
+            const branchLine = document.getElementById(branch === 'main' ? 'mainCommits' : 'featureCommits');
+            if (!branchLine) {
+                addToConsole('workflowConsole', 'Create feature branch first!', 'error');
+                return;
+            }
+
+            const commit = document.createElement('div');
+            commit.className = 'commit';
+            commit.style.animationDelay = '0s';
+            commit.innerHTML = `
+                <span class="commit-icon">📝</span>
+                <span class="commit-id">${String.fromCharCode(97 + commitCount)}</span>
+            `;
+            branchLine.appendChild(commit);
+            commitCount++;
+
+            addToConsole('workflowConsole', `git commit -m "Feature update ${commitCount}"`, 'command');
+            addToConsole('workflowConsole', `[${branch}] Commit created successfully`, 'success');
+        }
+
+        function createBranch() {
+            if (featureBranchCreated) {
+                addToConsole('workflowConsole', 'Feature branch already exists!', 'error');
+                return;
+            }
+
+            const container = document.getElementById('branchContainer');
+            const featureBranch = document.createElement('div');
+            featureBranch.className = 'branch';
+            featureBranch.id = 'featureBranch';
+            featureBranch.innerHTML = `
+                <div class="branch-name">feature</div>
+                <div class="commit-line" id="featureCommits"></div>
+            `;
+            container.appendChild(featureBranch);
+            featureBranchCreated = true;
+
+            addToConsole('workflowConsole', 'git checkout -b feature', 'command');
+            addToConsole('workflowConsole', 'Switched to new branch "feature"', 'success');
+        }
+
+        function mergeBranch() {
+            if (!featureBranchCreated) {
+                addToConsole('workflowConsole', 'No feature branch to merge!', 'error');
+                return;
+            }
+
+            addToConsole('workflowConsole', 'git checkout main', 'command');
+            addToConsole('workflowConsole', 'git merge feature', 'command');
+            addToConsole('workflowConsole', 'Fast-forward merge completed! 🎉', 'success');
+        }
+
+        function resetWorkflow() {
+            const container = document.getElementById('branchContainer');
+            container.innerHTML = `
+                <div class="branch" id="mainBranch">
+                    <div class="branch-name">main</div>
+                    <div class="commit-line" id="mainCommits">
+                        <div class="commit">
+                            <span class="commit-icon">📍</span>
+                            <span class="commit-id">init</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            commitCount = 1;
+            featureBranchCreated = false;
+            document.getElementById('workflowConsole').innerHTML = `
+                <div class="console-line">
+                    <span class="console-output">Workflow reset. Ready for new operations!</span>
+                </div>
+            `;
+        }
+
+        function addToConsole(consoleId, text, type = 'output') {
+            const console = document.getElementById(consoleId);
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            
+            if (type === 'command') {
+                line.innerHTML = `<span class="console-prompt">$</span> <span class="console-command">${text}</span>`;
+            } else if (type === 'success') {
+                line.innerHTML = `<span class="console-output" style="color: #4CAF50;">${text}</span>`;
+            } else if (type === 'error') {
+                line.innerHTML = `<span class="console-output" style="color: #ff5252;">${text}</span>`;
+            } else {
+                line.innerHTML = `<span class="console-output">${text}</span>`;
+            }
+            
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function runGitCommand(cmd) {
+            const outputs = {
+                'init': 'Initialized empty Git repository in /project/.git/',
+                'clone': 'Cloning into "repository"...\nremote: Counting objects: 100% (245/245)\nReceiving objects: 100% ✓',
+                'add': 'Changes staged for commit',
+                'commit': '[main a7b3c9f] Commit message\n 3 files changed, 45 insertions(+), 12 deletions(-)',
+                'status': 'On branch main\nYour branch is up to date with "origin/main"\nnothing to commit, working tree clean',
+                'push': 'Enumerating objects: 5, done.\nCounting objects: 100% ✓\nWriting objects: 100% ✓\nTo github.com:user/repo.git',
+                'pull': 'Updating a7b3c9f..e5d8a2c\nFast-forward\n app.js | 10 ++++++++--\n 1 file changed, 8 insertions(+), 2 deletions(-)',
+                'branch': 'Created new branch "feature"',
+                'checkout': 'Switched to branch "feature"',
+                'merge': 'Updating a7b3c9f..e5d8a2c\nFast-forward',
+                'log': 'commit a7b3c9f (HEAD -> main)\nAuthor: Developer <dev@example.com>\nDate: Mon Dec 8 10:30:45 2024\n\n    Feature implementation',
+                'remote': 'Remote "origin" added successfully'
+            };
+
+            const console = document.getElementById('commandConsole');
+            console.innerHTML = '';
+            addToConsole('commandConsole', `git ${cmd}`, 'command');
+            addToConsole('commandConsole', outputs[cmd], 'success');
+        }
+
+        function runAdvancedCommand(cmd) {
+            const outputs = {
+                'rebase': 'First, rewinding head to replay your work on top of it...\nApplying: Feature commit\nApplying: Bug fix',
+                'stash': 'Saved working directory and index state\nWIP on main: a7b3c9f Feature update',
+                'tag': 'Tag v1.0.0 created successfully',
+                'diff': 'diff --git a/app.js b/app.js\nindex 1234567..abcdefg 100644\n--- a/app.js\n+++ b/app.js\n@@ -10,7 +10,7 @@\n- old code\n+ new code',
+                'cherry-pick': '[main e5d8a2c] Cherry-picked commit\n 1 file changed, 5 insertions(+)',
+                'reset': 'Unstaged changes after reset:\nM\tapp.js\nM\tconfig.js'
+            };
+
+            const console = document.getElementById('advancedConsole');
+            console.innerHTML = '';
+            addToConsole('advancedConsole', `git ${cmd}`, 'command');
+            addToConsole('advancedConsole', outputs[cmd], 'success');
+        }
+
+        // Initialize lifecycle console with demo commands
+        setTimeout(() => {
+            addToConsole('lifecycleConsole', 'echo "# My Project" > README.md', 'command');
+            addToConsole('lifecycleConsole', 'git add README.md', 'command');
+            addToConsole('lifecycleConsole', 'git commit -m "Initial commit"', 'command');
+            addToConsole('lifecycleConsole', '[main (root-commit) a7b3c9f] Initial commit', 'success');
+        }, 1000);
+    </script>
+</body>
+</html>

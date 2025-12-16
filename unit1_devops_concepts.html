@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit 1: Interactive DevOps Experience</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #7c3aed 100%);
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 3rem 0;
+            animation: fadeInDown 1s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, #fff, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            height: 10px;
+            border-radius: 10px;
+            margin: 2rem 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #ec4899);
+            width: 16.6%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* Navigation */
+        .nav-pills {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .nav-pill {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-pill:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .nav-pill:hover:before {
+            left: 100%;
+        }
+
+        .nav-pill:hover, .nav-pill.active {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-5px);
+            border-color: #8b5cf6;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+        }
+
+        /* Content Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Interactive Cards */
+        .definition-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 3rem;
+            margin: 2rem 0;
+            animation: slideIn 0.8s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .definition-card:before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #8b5cf6, #ec4899, #3b82f6);
+            border-radius: 32px;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .big-text {
+            font-size: 2rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            padding: 0.2rem 0.8rem;
+            border-radius: 10px;
+            font-weight: 600;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .highlight:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Interactive Simulators */
+        .simulator-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .simulator-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .sim-btn {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border: none;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .sim-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .sim-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .simulation-area {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 2rem;
+            min-height: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Code Editor Simulation */
+        .code-editor {
+            background: #1e1e1e;
+            border-radius: 10px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            text-align: left;
+            margin: 1rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-line {
+            padding: 0.3rem 1rem;
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .code-line:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #8b5cf6;
+        }
+
+        .code-keyword {
+            color: #569cd6;
+        }
+
+        .code-string {
+            color: #ce9178;
+        }
+
+        .code-comment {
+            color: #6a9955;
+        }
+
+        /* Deployment Pipeline Visualization */
+        .pipeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .pipeline-stage {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .pipeline-stage.active {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .pipeline-stage.completed {
+            background: rgba(34, 197, 94, 0.3);
+            border-color: #22c55e;
+        }
+
+        .pipeline-connector {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pipeline-connector:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+            animation: flow 2s infinite linear;
+        }
+
+        @keyframes flow {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Interactive DevOps Lifecycle */
+        .lifecycle-container {
+            position: relative;
+            height: 600px;
+            margin: 3rem 0;
+        }
+
+        .lifecycle-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            box-shadow: 0 0 50px rgba(139, 92, 246, 0.5);
+            animation: pulse 2s ease-in-out infinite;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+        }
+
+        .lifecycle-stage {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(139, 92, 246, 0.9));
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .lifecycle-stage:hover {
+            transform: scale(1.2);
+            z-index: 10;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .stage-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stage-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Metrics Dashboard */
+        .metrics-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .metric-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0.5rem 0;
+        }
+
+        /* Interactive Console */
+        .console {
+            background: #000;
+            border-radius: 10px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+            height: 200px;
+            overflow-y: auto;
+            margin: 1rem 0;
+            text-align: left;
+        }
+
+        .console-line {
+            margin: 0.3rem 0;
+            animation: type 0.5s ease-out;
+        }
+
+        @keyframes type {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Challenge Cards */
+        .challenge-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .challenge-card:hover {
+            border-color: #8b5cf6;
+            transform: translateY(-5px);
+        }
+
+        .challenge-card.solved {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        /* Achievement System */
+        .achievement-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: #000;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin: 0.5rem;
+            font-weight: bold;
+            animation: popIn 0.5s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .big-text { font-size: 1.5rem; }
+            .lifecycle-container { height: 400px; }
+            .lifecycle-stage { width: 100px; height: 100px; }
+            .stage-icon { font-size: 1.8rem; }
+            .stage-name { font-size: 0.75rem; }
+            .pipeline { flex-wrap: wrap; justify-content: center; }
+            .pipeline-connector { display: none; }
+        }
+
+        /* Drag and Drop */
+        .drag-container {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+            min-height: 100px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .draggable {
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 10px;
+            cursor: move;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        .draggable.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .drop-zone {
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.active {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        /* Microservices Network */
+        .microservices-network {
+            position: relative;
+            height: 300px;
+            margin: 2rem 0;
+        }
+
+        .service-node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .service-node:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: rgba(59, 130, 246, 0.5);
+            transform-origin: 0 0;
+        }
+
+        /* Quiz Container */
+        .quiz-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .quiz-question {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quiz-options {
+            display: grid;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .quiz-option {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .quiz-option.correct {
+            background: rgba(34, 197, 94, 0.3);
+            border: 2px solid #22c55e;
+        }
+
+        .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.3);
+            border: 2px solid #ef4444;
+        }
+
+        /* Animation for success */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f59e0b;
+            top: -10px;
+            z-index: 1000;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Unit 1: Interactive DevOps Experience</h1>
+            <p class="subtitle">Experience DevOps through hands-on simulations, challenges, and interactive visualizations</p>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div id="achievements"></div>
+        </div>
+
+        <div class="nav-pills">
+            <button class="nav-pill active" onclick="showSection('what-is')">🚀 DevOps Basics</button>
+            <button class="nav-pill" onclick="showSection('lifecycle')">♻️ Lifecycle Simulator</button>
+            <button class="nav-pill" onclick="showSection('pipeline')">⚙️ CI/CD Pipeline</button>
+            <button class="nav-pill" onclick="showSection('collaboration')">🤝 Team Collaboration</button>
+            <button class="nav-pill" onclick="showSection('microservices')">🏗️ Microservices Lab</button>
+            <button class="nav-pill" onclick="showSection('challenges')">🎯 DevOps Challenges</button>
+        </div>
+
+        <!-- DevOps Basics Section -->
+        <div id="what-is" class="section active">
+            <div class="definition-card">
+                <div class="big-text">
+                    <strong>DevOps</strong> is a <span class="highlight" onclick="playSimulation('culture')">cultural transformation</span> that unifies 
+                    <span class="highlight" onclick="playSimulation('development')">Development</span> and 
+                    <span class="highlight" onclick="playSimulation('operations')">Operations</span> 
+                    to deliver value faster.
+                </div>
+                
+                <div class="simulator-container">
+                    <h3>🔬 DevOps Culture Simulator</h3>
+                    <div class="simulator-controls">
+                        <button class="sim-btn" onclick="simulateTraditional()">Traditional Model</button>
+                        <button class="sim-btn" onclick="simulateDevOps()">DevOps Model</button>
+                        <button class="sim-btn" onclick="resetSimulation()">Reset</button>
+                    </div>
+                    <div class="simulation-area" id="cultureSim">
+                        <div id="teamVisualization"></div>
+                        <div class="console" id="cultureConsole"></div>
+                    </div>
+                </div>
+
+                <div class="metrics-dashboard">
+                    <div class="metric-card" onclick="showMetricDetails('deployment')">
+                        <div>🚀 Deployment Frequency</div>
+                        <div class="metric-value" id="deploymentFreq">1/month</div>
+                        <div>Traditional → DevOps</div>
+                    </div>
+                    <div class="metric-card" onclick="showMetricDetails('recovery')">
+                        <div>⚡ Recovery Time</div>
+                        <div class="metric-value" id="recoveryTime">24h</div>
+                        <div>Click to improve</div>
+                    </div>
+                    <div class="metric-card" onclick="showMetricDetails('failure')">
+                        <div>🔧 Change Failure Rate</div>
+                        <div class="metric-value" id="failureRate">40%</div>
+                        <div>Drag to reduce</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lifecycle Simulator Section -->
+        <div id="lifecycle" class="section">
+            <h2 style="text-align: center; font-size: 2.5rem; margin: 2rem 0;">♻️ Interactive DevOps Lifecycle</h2>
+            
+            <div class="simulator-container">
+                <div class="simulator-controls">
+                    <button class="sim-btn" onclick="startLifecycle()">Start Lifecycle</button>
+                    <button class="sim-btn" onclick="pauseLifecycle()">Pause</button>
+                    <button class="sim-btn" onclick="resetLifecycle()">Reset</button>
+                    <select class="sim-btn" onchange="changeLifecycleSpeed(this.value)">
+                        <option value="slow">Slow Speed</option>
+                        <option value="normal" selected>Normal Speed</option>
+                        <option value="fast">Fast Speed</option>
+                    </select>
+                </div>
+
+                <div class="lifecycle-container">
+                    <div class="lifecycle-center" onclick="toggleLifecycle()">
+                        <div>DevOps<br>Cycle</div>
+                    </div>
+                    
+                    <!-- Lifecycle stages positioned in a circle -->
+                    <div class="lifecycle-stage" style="top: 10%; left: 50%;" onclick="explainStage('plan')">
+                        <span class="stage-icon">📋</span>
+                        <span class="stage-name">Plan</span>
+                    </div>
+                    <div class="lifecycle-stage" style="top: 25%; right: 15%;" onclick="explainStage('code')">
+                        <span class="stage-icon">💻</span>
+                        <span class="stage-name">Code</span>
+                    </div>
+                    <div class="lifecycle-stage" style="top: 50%; right: 5%;" onclick="explainStage('build')">
+                        <span class="stage-icon">🔨</span>
+                        <span class="stage-name">Build</span>
+                    </div>
+                    <div class="lifecycle-stage" style="bottom: 15%; right: 15%;" onclick="explainStage('test')">
+                        <span class="stage-icon">🧪</span>
+                        <span class="stage-name">Test</span>
+                    </div>
+                    <div class="lifecycle-stage" style="bottom: 0%; left: 50%;" onclick="explainStage('release')">
+                        <span class="stage-icon">🚀</span>
+                        <span class="stage-name">Release</span>
+                    </div>
+                    <div class="lifecycle-stage" style="bottom: 15%; left: 15%;" onclick="explainStage('deploy')">
+                        <span class="stage-icon">📦</span>
+                        <span class="stage-name">Deploy</span>
+                    </div>
+                    <div class="lifecycle-stage" style="top: 50%; left: 5%;" onclick="explainStage('monitor')">
+                        <span class="stage-icon">📊</span>
+                        <span class="stage-name">Monitor</span>
+                    </div>
+                    <div class="lifecycle-stage" style="top: 25%; left: 15%;" onclick="explainStage('feedback')">
+                        <span class="stage-icon">💬</span>
+                        <span class="stage-name">Feedback</span>
+                    </div>
+                </div>
+
+                <div class="console" id="lifecycleConsole">
+                    <div class="console-line">> Ready to start DevOps lifecycle simulation...</div>
+                </div>
+            </div>
+
+            <div class="definition-card">
+                <h3>🎮 Interactive Exercise: Arrange the Pipeline</h3>
+                <p>Drag and drop the stages to create the optimal DevOps workflow:</p>
+                
+                <div class="drag-container" id="dragContainer">
+                    <div class="draggable" draggable="true" data-stage="plan">Plan</div>
+                    <div class="draggable" draggable="true" data-stage="code">Code</div>
+                    <div class="draggable" draggable="true" data-stage="build">Build</div>
+                    <div class="draggable" draggable="true" data-stage="test">Test</div>
+                    <div class="draggable" draggable="true" data-stage="deploy">Deploy</div>
+                    <div class="draggable" draggable="true" data-stage="monitor">Monitor</div>
+                </div>
+                
+                <div class="drop-zone" id="dropZone">
+                    Drop stages here to build your pipeline
+                </div>
+                
+                <button class="sim-btn" onclick="checkPipeline()" style="margin-top: 1rem;">Check Pipeline</button>
+                <div id="pipelineResult"></div>
+            </div>
+        </div>
+
+        <!-- CI/CD Pipeline Section -->
+        <div id="pipeline" class="section">
+            <h2 style="text-align: center; font-size: 2.5rem; margin: 2rem 0;">⚙️ CI/CD Pipeline Simulator</h2>
+            
+            <div class="simulator-container">
+                <div class="code-editor">
+                    <h4>✏️ Code Editor (Try making changes)</h4>
+                    <div class="code-line" onclick="editCode(1)"><span class="code-keyword">function</span> <span class="code-string">addFeature</span>() {</div>
+                    <div class="code-line" onclick="editCode(2)">    console.<span class="code-keyword">log</span>(<span class="code-string">"New feature added"</span>);</div>
+                    <div class="code-line" onclick="editCode(3)">    <span class="code-comment">// TODO: Implement business logic</span></div>
+                    <div class="code-line" onclick="editCode(4)">    <span class="code-keyword">return</span> <span class="code-string">"Feature complete"</span>;</div>
+                    <div class="code-line" onclick="editCode(5)">}</div>
+                </div>
+
+                <button class="sim-btn" onclick="commitCode()">Commit Code</button>
+
+                <div class="pipeline">
+                    <div class="pipeline-stage" id="stage1">
+                        <div>🔀</div>
+                        <div>Git Push</div>
+                    </div>
+                    <div class="pipeline-connector"></div>
+                    <div class="pipeline-stage" id="stage2">
+                        <div>🔨</div>
+                        <div>Build</div>
+                    </div>
+                    <div class="pipeline-connector"></div>
+                    <div class="pipeline-stage" id="stage3">
+                        <div>🧪</div>
+                        <div>Test</div>
+                    </div>
+                    <div class="pipeline-connector"></div>
+                    <div class="pipeline-stage" id="stage4">
+                        <div>🐳</div>
+                        <div>Containerize</div>
+                    </div>
+                    <div class="pipeline-connector"></div>
+                    <div class="pipeline-stage" id="stage5">
+                        <div>🚀</div>
+                        <div>Deploy</div>
+                    </div>
+                </div>
+
+                <div class="console" id="pipelineConsole">
+                    <div class="console-line">> CI/CD Pipeline ready...</div>
+                    <div class="console-line">> Waiting for code commit...</div>
+                </div>
+
+                <div class="simulator-controls">
+                    <button class="sim-btn" onclick="runPipeline()">Run Full Pipeline</button>
+                    <button class="sim-btn" onclick="automatePipeline()">Enable Automation</button>
+                    <button class="sim-btn" onclick="simulateFailure()">Simulate Failure</button>
+                </div>
+            </div>
+
+            <div class="definition-card">
+                <h3>📊 Real-time Metrics Dashboard</h3>
+                <div class="metrics-dashboard">
+                    <div class="metric-card">
+                        <div>⏱️ Build Time</div>
+                        <div class="metric-value" id="buildTime">45s</div>
+                        <div id="buildTrend">↘️ Improving</div>
+                    </div>
+                    <div class="metric-card">
+                        <div>✅ Test Coverage</div>
+                        <div class="metric-value" id="testCoverage">85%</div>
+                        <div id="coverageTrend">↗️ Increasing</div>
+                    </div>
+                    <div class="metric-card">
+                        <div>🚀 Deployment Count</div>
+                        <div class="metric-value" id="deploymentCount">0</div>
+                        <div>Today</div>
+                    </div>
+                    <div class="metric-card">
+                        <div>🔧 Pipeline Health</div>
+                        <div class="metric-value" id="pipelineHealth">100%</div>
+                        <div id="healthStatus">🟢 Healthy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Collaboration Section -->
+        <div id="collaboration" class="section">
+            <h2 style="text-align: center; font-size: 2.5rem; margin: 2rem 0;">🤝 Team Collaboration Simulator</h2>
+            
+            <div class="simulator-container">
+                <div class="collab-container" style="display: flex; justify-content: center; gap: 4rem; margin: 2rem 0;">
+                    <div class="team-circle" onclick="teamAction('dev')">
+                        <div style="font-size: 3rem;">👨‍💻</div>
+                        <div>Dev Team</div>
+                        <div style="font-size: 0.8rem;">Features: <span id="devFeatures">3</span></div>
+                    </div>
+                    
+                    <div class="team-circle" onclick="teamAction('ops')">
+                        <div style="font-size: 3rem;">⚙️</div>
+                        <div>Ops Team</div>
+                        <div style="font-size: 0.8rem;">Incidents: <span id="opsIncidents">2</span></div>
+                    </div>
+                </div>
+
+                <div class="simulator-controls">
+                    <button class="sim-btn" onclick="createFeature()">Create New Feature</button>
+                    <button class="sim-btn" onclick="reportIncident()">Report Incident</button>
+                    <button class="sim-btn" onclick="callMeeting()">Call Standup Meeting</button>
+                    <button class="sim-btn" onclick="implementFeedback()">Implement Feedback</button>
+                </div>
+
+                <div class="console" id="collabConsole">
+                    <div class="console-line">> Collaboration platform ready...</div>
+                    <div class="console-line">> Teams are waiting for interaction...</div>
+                </div>
+            </div>
+
+            <div class="definition-card">
+                <h3>🎯 Communication Challenge</h3>
+                <div class="quiz-container">
+                    <div class="quiz-question">
+                        A developer says: "The feature is ready but Ops won't deploy it."
+                        What should happen next in a DevOps culture?
+                    </div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="checkAnswer(this, 'correct')">
+                            Joint troubleshooting session with Dev and Ops
+                        </div>
+                        <div class="quiz-option" onclick="checkAnswer(this, 'incorrect')">
+                            Developer opens a ticket and waits
+                        </div>
+                        <div class="quiz-option" onclick="checkAnswer(this, 'incorrect')">
+                            Ops team investigates alone
+                        </div>
+                        <div class="quiz-option" onclick="checkAnswer(this, 'incorrect')">
+                            Manager decides who's responsible
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Microservices Section -->
+        <div id="microservices" class="section">
+            <h2 style="text-align: center; font-size: 2.5rem; margin: 2rem 0;">🏗️ Microservices Laboratory</h2>
+            
+            <div class="simulator-container">
+                <h3>🔬 Service Mesh Visualization</h3>
+                <div class="microservices-network" id="serviceMesh">
+                    <!-- Service nodes will be added dynamically -->
+                </div>
+
+                <div class="simulator-controls">
+                    <button class="sim-btn" onclick="addService()">Add Service</button>
+                    <button class="sim-btn" onclick="scaleService()">Scale Service</button>
+                    <button class="sim-btn" onclick="failService()">Simulate Failure</button>
+                    <button class="sim-btn" onclick="recoverService()">Auto-recover</button>
+                </div>
+
+                <div class="console" id="microservicesConsole">
+                    <div class="console-line">> Microservices cluster initialized...</div>
+                    <div class="console-line">> 3 services running...</div>
+                </div>
+            </div>
+
+            <div class="definition-card">
+                <h3>🐳 Container Orchestration Challenge</h3>
+                <p>Deploy containers to balance load across nodes:</p>
+                
+                <div style="display: flex; gap: 2rem; margin: 2rem 0; justify-content: center;">
+                    <div class="drop-zone" style="width: 150px; height: 150px;" ondrop="dropContainer(event)" ondragover="allowDrop(event)">
+                        Node 1<br><span id="node1Count">0</span> containers
+                    </div>
+                    <div class="drop-zone" style="width: 150px; height: 150px;" ondrop="dropContainer(event)" ondragover="allowDrop(event)">
+                        Node 2<br><span id="node2Count">0</span> containers
+                    </div>
+                    <div class="drop-zone" style="width: 150px; height: 150px;" ondrop="dropContainer(event)" ondragover="allowDrop(event)">
+                        Node 3<br><span id="node3Count">0</span> containers
+                    </div>
+                </div>
+
+                <div class="drag-container">
+                    <div class="draggable" draggable="true" ondragstart="dragContainer(event)" data-container="app1">
+                        App Container 1
+                    </div>
+                    <div class="draggable" draggable="true" ondragstart="dragContainer(event)" data-container="app2">
+                        App Container 2
+                    </div>
+                    <div class="draggable" draggable="true" ondragstart="dragContainer(event)" data-container="app3">
+                        App Container 3
+                    </div>
+                    <div class="draggable" draggable="true" ondragstart="dragContainer(event)" data-container="db">
+                        Database Container
+                    </div>
+                </div>
+
+                <button class="sim-btn" onclick="checkOrchestration()" style="margin-top: 1rem;">Check Balance</button>
+                <div id="orchestrationResult"></div>
+            </div>
+        </div>
+
+        <!-- Challenges Section -->
+        <div id="challenges" class="section">
+            <h2 style="text-align: center; font-size: 2.5rem; margin: 2rem 0;">🎯 DevOps Challenges</h2>
+            
+            <div class="definition-card">
+                <h3>🏆 Complete these challenges to master DevOps</h3>
+                
+                <div class="challenge-card" onclick="startChallenge(1)" id="challenge1">
+                    <h4>Challenge 1: Fix the Broken Pipeline</h4>
+                    <p>A CI pipeline is failing due to test errors. Debug and fix the issue.</p>
+                    <div class="progress-container" style="height: 5px; margin: 0.5rem 0;">
+                        <div class="progress-bar" style="width: 0%;" id="challenge1Progress"></div>
+                    </div>
+                </div>
+
+                <div class="challenge-card" onclick="startChallenge(2)" id="challenge2">
+                    <h4>Challenge 2: Automate Deployment</h4>
+                    <p>Create an automated deployment script for a microservice.</p>
+                    <div class="progress-container" style="height: 5px; margin: 0.5rem 0;">
+                        <div class="progress-bar" style="width: 0%;" id="challenge2Progress"></div>
+                    </div>
+                </div>
+
+                <div class="challenge-card" onclick="startChallenge(3)" id="challenge3">
+                    <h4>Challenge 3: Resolve Production Incident</h4>
+                    <p>Diagnose and fix a production outage with team collaboration.</p>
+                    <div class="progress-container" style="height: 5px; margin: 0.5rem 0;">
+                        <div class="progress-bar" style="width: 0%;" id="challenge3Progress"></div>
+                    </div>
+                </div>
+
+                <div class="challenge-card" onclick="startChallenge(4)" id="challenge4">
+                    <h4>Challenge 4: Performance Optimization</h4>
+                    <p>Improve application performance through monitoring and tuning.</p>
+                    <div class="progress-container" style="height: 5px; margin: 0.5rem 0;">
+                        <div class="progress-bar" style="width: 0%;" id="challenge4Progress"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="simulator-container">
+                <h3>📈 Your DevOps Journey</h3>
+                <div class="metrics-dashboard">
+                    <div class="metric-card">
+                        <div>🏅 Challenges Completed</div>
+                        <div class="metric-value" id="completedChallenges">0/4</div>
+                        <div id="challengeStatus">Beginner</div>
+                    </div>
+                    <div class="metric-card">
+                        <div>⏱️ Time to Resolution</div>
+                        <div class="metric-value" id="resolutionTime">-</div>
+                        <div>Average</div>
+                    </div>
+                    <div class="metric-card">
+                        <div>🤝 Collaboration Score</div>
+                        <div class="metric-value" id="collabScore">0%</div>
+                        <div>Teamwork efficiency</div>
+                    </div>
+                    <div class="metric-card">
+                        <div>⚡ Automation Level</div>
+                        <div class="metric-value" id="automationLevel">0%</div>
+                        <div>Process automation</div>
+                    </div>
+                </div>
+
+                <div id="achievementsContainer" style="margin-top: 2rem;">
+                    <h4>🏆 Achievements Unlocked</h4>
+                    <div id="achievementsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentSection = 'what-is';
+        let progress = 0;
+        let achievements = [];
+        let pipelineRunning = false;
+        let lifecycleInterval;
+        let services = [];
+        let challenges = [
+            { id: 1, completed: false, progress: 0, name: "Fix Broken Pipeline" },
+            { id: 2, completed: false, progress: 0, name: "Automate Deployment" },
+            { id: 3, completed: false, progress: 0, name: "Resolve Incident" },
+            { id: 4, completed: false, progress: 0, name: "Performance Optimization" }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgress();
+            createServiceMesh();
+            loadAchievements();
+        });
+
+        // Section Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active from all pills
+            document.querySelectorAll('.nav-pill').forEach(pill => {
+                pill.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Mark clicked pill as active
+            event.target.classList.add('active');
+            
+            // Update progress
+            currentSection = sectionId;
+            updateProgress();
+            
+            // Log interaction
+            addAchievement('section_' + sectionId, `Explored ${sectionId.replace('-', ' ')}`);
+        }
+
+        function updateProgress() {
+            const sections = ['what-is', 'lifecycle', 'pipeline', 'collaboration', 'microservices', 'challenges'];
+            const currentIndex = sections.indexOf(currentSection);
+            progress = ((currentIndex + 1) / sections.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Culture Simulator
+        function simulateTraditional() {
+            const console = document.getElementById('cultureConsole');
+            console.innerHTML = '';
+            addConsoleLine(console, "> Traditional Model Activated");
+            addConsoleLine(console, "> Development team creates feature...");
+            setTimeout(() => addConsoleLine(console, "> Feature completed in 2 weeks"), 1000);
+            setTimeout(() => addConsoleLine(console, "> Handoff to operations team..."), 2000);
+            setTimeout(() => addConsoleLine(console, "> Operations team requests changes..."), 3000);
+            setTimeout(() => addConsoleLine(console, "> Back to development team..."), 4000);
+            setTimeout(() => addConsoleLine(console, "> Total time: 4 weeks 🐌"), 5000);
+        }
+
+        function simulateDevOps() {
+            const console = document.getElementById('cultureConsole');
+            console.innerHTML = '';
+            addConsoleLine(console, "> DevOps Model Activated");
+            addConsoleLine(console, "> Cross-functional team planning...");
+            setTimeout(() => addConsoleLine(console, "> Pair programming: Dev + Ops"), 1000);
+            setTimeout(() => addConsoleLine(console, "> Automated testing running..."), 2000);
+            setTimeout(() => addConsoleLine(console, "> Continuous deployment..."), 3000);
+            setTimeout(() => addConsoleLine(console, "> Feature live in production!"), 4000);
+            setTimeout(() => addConsoleLine(console, "> Total time: 2 days ⚡"), 5000);
+            
+            addAchievement('devops_culture', 'Experienced DevOps workflow');
+        }
+
+        function resetSimulation() {
+            document.getElementById('cultureConsole').innerHTML = '> Ready for simulation...';
+        }
+
+        // Lifecycle Simulator
+        function startLifecycle() {
+            if (lifecycleInterval) clearInterval(lifecycleInterval);
+            
+            const stages = document.querySelectorAll('.lifecycle-stage');
+            const console = document.getElementById('lifecycleConsole');
+            console.innerHTML = '';
+            
+            let currentStage = 0;
+            
+            lifecycleInterval = setInterval(() => {
+                // Reset all stages
+                stages.forEach(stage => stage.style.boxShadow = 'none');
+                
+                // Activate current stage
+                stages[currentStage].style.boxShadow = '0 0 30px rgba(59, 130, 246, 0.7)';
+                
+                // Update console
+                const stageName = stages[currentStage].querySelector('.stage-name').textContent;
+                addConsoleLine(console, `> ${stageName} stage in progress...`);
+                
+                // Move to next stage
+                currentStage = (currentStage + 1) % stages.length;
+                
+                // If completed full cycle
+                if (currentStage === 0) {
+                    addConsoleLine(console, "> 🎉 DevOps cycle completed!");
+                    addAchievement('lifecycle_complete', 'Completed full DevOps lifecycle');
+                }
+            }, 1500);
+        }
+
+        function pauseLifecycle() {
+            if (lifecycleInterval) {
+                clearInterval(lifecycleInterval);
+                lifecycleInterval = null;
+                addConsoleLine(document.getElementById('lifecycleConsole'), "> Lifecycle paused");
+            }
+        }
+
+        function resetLifecycle() {
+            pauseLifecycle();
+            document.querySelectorAll('.lifecycle-stage').forEach(stage => {
+                stage.style.boxShadow = 'none';
+            });
+            document.getElementById('lifecycleConsole').innerHTML = '> Ready to start DevOps lifecycle simulation...';
+        }
+
+        function explainStage(stage) {
+            const messages = {
+                plan: "📋 Planning: Define requirements and create roadmap",
+                code: "💻 Coding: Write and review code collaboratively",
+                build: "🔨 Build: Compile and package the application",
+                test: "🧪 Testing: Automated tests ensure quality",
+                release: "🚀 Release: Prepare for deployment",
+                deploy: "📦 Deployment: Automated deployment to production",
+                monitor: "📊 Monitoring: Track performance and errors",
+                feedback: "💬 Feedback: Collect user input for improvements"
+            };
+            
+            alert(messages[stage] || "Stage information not available");
+        }
+
+        // Pipeline Simulator
+        function commitCode() {
+            const console = document.getElementById('pipelineConsole');
+            addConsoleLine(console, "> Code committed to Git repository");
+            addConsoleLine(console, "> Triggering CI/CD pipeline...");
+            
+            document.getElementById('stage1').classList.add('active');
+            setTimeout(() => {
+                document.getElementById('stage1').classList.remove('active');
+                document.getElementById('stage1').classList.add('completed');
+                document.getElementById('stage2').classList.add('active');
+                addConsoleLine(console, "> Build process started...");
+            }, 1000);
+        }
+
+        function runPipeline() {
+            const stages = ['stage1', 'stage2', 'stage3', 'stage4', 'stage5'];
+            const console = document.getElementById('pipelineConsole');
+            
+            console.innerHTML = '';
+            addConsoleLine(console, "> Starting full CI/CD pipeline...");
+            
+            stages.forEach((stageId, index) => {
+                setTimeout(() => {
+                    // Reset all stages
+                    stages.forEach(s => {
+                        document.getElementById(s).classList.remove('active', 'completed');
+                    });
+                    
+                    // Activate current stage
+                    document.getElementById(stageId).classList.add('active');
+                    
+                    // Add console message
+                    const messages = [
+                        "> Git push successful",
+                        "> Building application...",
+                        "> Running automated tests...",
+                        "> Creating Docker container...",
+                        "> Deploying to production..."
+                    ];
+                    addConsoleLine(console, messages[index]);
+                    
+                    // Complete stage
+                    setTimeout(() => {
+                        document.getElementById(stageId).classList.remove('active');
+                        document.getElementById(stageId).classList.add('completed');
+                        
+                        // Update deployment count
+                        if (stageId === 'stage5') {
+                            const count = parseInt(document.getElementById('deploymentCount').textContent);
+                            document.getElementById('deploymentCount').textContent = count + 1;
+                            addAchievement('deployment', 'Successfully deployed to production');
+                        }
+                    }, 500);
+                }, index * 1500);
+            });
+        }
+
+        // Drag and Drop for Pipeline
+        let draggedStage = null;
+
+        document.addEventListener('dragstart', function(event) {
+            if (event.target.classList.contains('draggable')) {
+                draggedStage = event.target;
+                event.target.classList.add('dragging');
+            }
+        });
+
+        document.addEventListener('dragend', function(event) {
+            if (event.target.classList.contains('draggable')) {
+                event.target.classList.remove('dragging');
+            }
+        });
+
+        document.addEventListener('dragover', function(event) {
+            event.preventDefault();
+        });
+
+        document.addEventListener('drop', function(event) {
+            event.preventDefault();
+            if (event.target.id === 'dropZone' && draggedStage) {
+                event.target.textContent = `Added: ${draggedStage.textContent}`;
+                event.target.classList.add('active');
+                draggedStage.style.display = 'none';
+            }
+        });
+
+        function checkPipeline() {
+            const dropZone = document.getElementById('dropZone');
+            if (dropZone.textContent.includes('Added')) {
+                document.getElementById('pipelineResult').innerHTML = 
+                    '<div class="achievement-badge">✅ Pipeline correctly configured!</div>';
+                addAchievement('pipeline_built', 'Built a DevOps pipeline');
+            } else {
+                document.getElementById('pipelineResult').innerHTML = 
+                    '<div style="color: #ef4444;">❌ Please add stages to the pipeline</div>';
+            }
+        }
+
+        // Microservices Functions
+        function createServiceMesh() {
+            const mesh = document.getElementById('serviceMesh');
+            mesh.innerHTML = '';
+            services = [];
+            
+            const serviceNames = ['Auth', 'Payment', 'Cart', 'User', 'Product', 'Notification'];
+            
+            serviceNames.forEach((name, index) => {
+                const angle = (index * 2 * Math.PI) / serviceNames.length;
+                const x = 150 + 100 * Math.cos(angle);
+                const y = 150 + 100 * Math.sin(angle);
+                
+                const service = document.createElement('div');
+                service.className = 'service-node';
+                service.style.left = `${x}px`;
+                service.style.top = `${y}px`;
+                service.style.animationDelay = `${index * 0.2}s`;
+                service.innerHTML = `<div>${name}</div>`;
+                service.onclick = () => serviceAction(name);
+                
+                mesh.appendChild(service);
+                services.push({ name, element: service, healthy: true });
+                
+                // Create connections
+                if (index > 0) {
+                    const prevAngle = ((index - 1) * 2 * Math.PI) / serviceNames.length;
+                    const prevX = 150 + 100 * Math.cos(prevAngle);
+                    const prevY = 150 + 100 * Math.sin(prevAngle);
+                    
+                    createConnection(prevX + 40, prevY + 40, x + 40, y + 40);
+                }
+            });
+        }
+
+        function createConnection(x1, y1, x2, y2) {
+            const mesh = document.getElementById('serviceMesh');
+            const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+            
+            const connection = document.createElement('div');
+            connection.className = 'connection';
+            connection.style.width = `${length}px`;
+            connection.style.left = `${x1}px`;
+            connection.style.top = `${y1}px`;
+            connection.style.transform = `rotate(${angle}deg)`;
+            
+            mesh.appendChild(connection);
+        }
+
+        function serviceAction(name) {
+            const console = document.getElementById('microservicesConsole');
+            addConsoleLine(console, `> Interacting with ${name} service...`);
+        }
+
+        function addService() {
+            const console = document.getElementById('microservicesConsole');
+            addConsoleLine(console, "> Adding new microservice...");
+            
+            const newService = {
+                name: 'API-Gateway',
+                healthy: true
+            };
+            
+            setTimeout(() => {
+                addConsoleLine(console, "> New service deployed successfully!");
+                addAchievement('microservice_added', 'Deployed a new microservice');
+            }, 1000);
+        }
+
+        // Container Orchestration
+        function allowDrop(event) {
+            event.preventDefault();
+            event.target.classList.add('active');
+        }
+
+        function dragContainer(event) {
+            event.dataTransfer.setData("container", event.target.dataset.container);
+        }
+
+        function dropContainer(event) {
+            event.preventDefault();
+            const container = event.dataTransfer.getData("container");
+            const node = event.target;
+            
+            // Update count
+            const countSpan = node.querySelector('span');
+            if (countSpan) {
+                let count = parseInt(countSpan.textContent);
+                countSpan.textContent = count + 1;
+                
+                // Check balance
+                setTimeout(checkOrchestration, 500);
+            }
+            
+            node.classList.remove('active');
+        }
+
+        function checkOrchestration() {
+            const nodes = [
+                parseInt(document.getElementById('node1Count').textContent),
+                parseInt(document.getElementById('node2Count').textContent),
+                parseInt(document.getElementById('node3Count').textContent)
+            ];
+            
+            const max = Math.max(...nodes);
+            const min = Math.min(...nodes);
+            const imbalance = max - min;
+            
+            const result = document.getElementById('orchestrationResult');
+            
+            if (imbalance <= 1) {
+                result.innerHTML = '<div class="achievement-badge">✅ Perfect load balancing!</div>';
+                addAchievement('load_balanced', 'Achieved perfect container orchestration');
+            } else {
+                result.innerHTML = `<div style="color: #f59e0b;">⚠️ Load imbalance detected (difference: ${imbalance})</div>`;
+            }
+        }
+
+        // Challenges
+        function startChallenge(challengeId) {
+            const challenge = challenges[challengeId - 1];
+            const progressBar = document.getElementById(`challenge${challengeId}Progress`);
+            const card = document.getElementById(`challenge${challengeId}`);
+            
+            if (!challenge.completed) {
+                let progress = challenge.progress;
+                const interval = setInterval(() => {
+                    progress += 10;
+                    progressBar.style.width = progress + '%';
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        challenge.completed = true;
+                        challenge.progress = 100;
+                        card.classList.add('solved');
+                        
+                        // Unlock achievement
+                        addAchievement(`challenge_${challengeId}`, `Completed: ${challenge.name}`);
+                        
+                        // Update completed challenges
+                        updateChallengeProgress();
+                        
+                        // Show confetti
+                        createConfetti();
+                    }
+                }, 500);
+            }
+        }
+
+        function updateChallengeProgress() {
+            const completed = challenges.filter(c => c.completed).length;
+            document.getElementById('completedChallenges').textContent = `${completed}/4`;
+            
+            if (completed === 4) {
+                addAchievement('master_devops', 'Mastered all DevOps challenges!');
+            }
+        }
+
+        // Achievements System
+        function addAchievement(id, name) {
+            if (!achievements.includes(id)) {
+                achievements.push(id);
+                
+                const badge = document.createElement('div');
+                badge.className = 'achievement-badge';
+                badge.textContent = `🏆 ${name}`;
+                badge.style.animationDelay = '0.1s';
+                
+                document.getElementById('achievementsList').appendChild(badge);
+                
+                // Save to localStorage
+                saveAchievements();
+                
+                // Show notification
+                showNotification(`Achievement Unlocked: ${name}`);
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #8b5cf6, #ec4899);
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 10px;
+                z-index: 10000;
+                animation: slideInRight 0.5s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.5s ease forwards';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 5000);
+            }
+        }
+
+        function loadAchievements() {
+            const saved = localStorage.getItem('devops_achievements');
+            if (saved) {
+                achievements = JSON.parse(saved);
+                achievements.forEach(achievement => {
+                    // Could reload achievements here if needed
+                });
+            }
+        }
+
+        function saveAchievements() {
+            localStorage.setItem('devops_achievements', JSON.stringify(achievements));
+        }
+
+        // Helper Functions
+        function addConsoleLine(consoleElement, text) {
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            line.textContent = text;
+            consoleElement.appendChild(line);
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+        }
+
+        // Team Collaboration
+        function teamAction(team) {
+            const console = document.getElementById('collabConsole');
+            if (team === 'dev') {
+                addConsoleLine(console, "> Dev team: Working on new feature implementation");
+            } else {
+                addConsoleLine(console, "> Ops team: Monitoring production metrics");
+            }
+        }
+
+        function createFeature() {
+            const features = parseInt(document.getElementById('devFeatures').textContent);
+            document.getElementById('devFeatures').textContent = features + 1;
+            addConsoleLine(document.getElementById('collabConsole'), "> New feature created by Dev team");
+        }
+
+        function reportIncident() {
+            const incidents = parseInt(document.getElementById('opsIncidents').textContent);
+            document.getElementById('opsIncidents').textContent = incidents + 1;
+            addConsoleLine(document.getElementById('collabConsole'), "> Incident reported - teams collaborating on fix");
+        }
+
+        // Quiz Functions
+        function checkAnswer(element, result) {
+            const options = element.parentElement.querySelectorAll('.quiz-option');
+            options.forEach(opt => {
+                opt.onclick = null;
+                if (opt === element) {
+                    opt.classList.add(result);
+                    if (result === 'correct') {
+                        addAchievement('quiz_correct', 'Solved collaboration challenge');
+                        setTimeout(() => {
+                            element.innerHTML += ' ✅';
+                        }, 500);
+                    } else {
+                        setTimeout(() => {
+                            element.innerHTML += ' ❌';
+                        }, 500);
+                    }
+                }
+            });
+        }
+
+        // Add CSS for slide animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maven Build Lifecycle Visualizer - Live Experience</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3.2rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #00c9ff, #92fe9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: drop-shadow(0 0 25px rgba(0, 201, 255, 0.3)); }
+            50% { filter: drop-shadow(0 0 40px rgba(146, 254, 157, 0.5)); }
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 3rem;
+            animation: fadeIn 2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .tab {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            color: white;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .tab:hover::before {
+            left: 100%;
+        }
+
+        .tab:hover, .tab.active {
+            background: linear-gradient(135deg, rgba(0, 201, 255, 0.3), rgba(146, 254, 157, 0.3));
+            border-color: #00c9ff;
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 201, 255, 0.4);
+        }
+
+        .content-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.5s ease;
+        }
+
+        .content-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            animation: sectionSlideIn 0.6s ease;
+        }
+
+        @keyframes sectionSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Build Pipeline Enhanced */
+        .build-pipeline-container {
+            perspective: 1000px;
+            margin: 3rem 0;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .build-pipeline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .phase {
+            width: 160px;
+            height: 160px;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.9), rgba(41, 128, 185, 0.9));
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            position: relative;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            transform-style: preserve-3d;
+        }
+
+        .phase:hover {
+            transform: scale(1.2) rotateY(10deg) rotateX(10deg);
+            z-index: 100;
+            box-shadow: 0 30px 80px rgba(52, 152, 219, 0.6);
+        }
+
+        .phase.active {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.9), rgba(39, 174, 96, 0.9));
+            animation: phasePulse 1.5s ease-in-out infinite;
+            transform: scale(1.15);
+        }
+
+        @keyframes phasePulse {
+            0%, 100% { 
+                transform: scale(1.15);
+                box-shadow: 0 0 30px rgba(46, 204, 113, 0.6);
+            }
+            50% { 
+                transform: scale(1.25);
+                box-shadow: 0 0 50px rgba(46, 204, 113, 0.9);
+            }
+        }
+
+        .phase.processing {
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.9), rgba(241, 196, 15, 0.9));
+            animation: processingSpin 2s linear infinite;
+        }
+
+        @keyframes processingSpin {
+            0% { transform: rotateY(0); }
+            100% { transform: rotateY(360deg); }
+        }
+
+        .phase.completed {
+            background: linear-gradient(135deg, rgba(39, 174, 96, 0.9), rgba(46, 204, 113, 0.9));
+        }
+
+        .phase.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 2rem;
+            color: #2ecc71;
+            font-weight: bold;
+            animation: checkPop 0.5s ease;
+        }
+
+        @keyframes checkPop {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.5); }
+            100% { transform: scale(1); }
+        }
+
+        .phase-icon {
+            font-size: 3.5rem;
+            margin-bottom: 0.8rem;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+        }
+
+        .phase-name {
+            font-weight: 700;
+            text-align: center;
+            font-size: 1.1rem;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .phase-details {
+            position: absolute;
+            bottom: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem;
+            border-radius: 10px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            width: 200px;
+            text-align: center;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .phase:hover .phase-details {
+            opacity: 1;
+            bottom: -100px;
+        }
+
+        .pipeline-connection {
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pipeline-flow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+            animation: flowAnimation 2s linear infinite;
+        }
+
+        @keyframes flowAnimation {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Enhanced Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00c9ff, #92fe9d);
+            border: none;
+            padding: 1.2rem 2.5rem;
+            border-radius: 15px;
+            cursor: pointer;
+            color: #1a1a2e;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 10px 30px rgba(0, 201, 255, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 20px 50px rgba(0, 201, 255, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        .speed-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .speed-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .speed-btn:hover {
+            background: rgba(0, 201, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        /* Enhanced Console */
+        .console-container {
+            background: #0d1b2a;
+            border-radius: 20px;
+            padding: 0;
+            margin: 2rem 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .console-header {
+            background: #1b263b;
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid #00c9ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .console-title {
+            font-weight: 700;
+            color: #00c9ff;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .console-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .console-action-btn {
+            background: rgba(0, 201, 255, 0.2);
+            border: 1px solid #00c9ff;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .console-action-btn:hover {
+            background: rgba(0, 201, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .console-body {
+            height: 400px;
+            overflow-y: auto;
+            padding: 2rem;
+            font-family: 'Cascadia Code', 'Courier New', monospace;
+            background: #0d1b2a;
+        }
+
+        .console-line {
+            margin: 0.8rem 0;
+            opacity: 0;
+            animation: typeIn 0.5s ease forwards;
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .console-line::before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            color: #00c9ff;
+            font-weight: bold;
+        }
+
+        @keyframes typeIn {
+            from { 
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .console-line.typing::after {
+            content: '█';
+            animation: blink 1s infinite;
+            color: #00c9ff;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .console-prompt { color: #4CAF50; }
+        .console-command { color: #FFD700; }
+        .console-output { color: #87CEEB; }
+        .console-success { color: #2ecc71; font-weight: bold; }
+        .console-error { color: #ff6b6b; font-weight: bold; }
+        .console-warning { color: #f39c12; }
+        .console-file { color: #9b59b6; }
+        .console-time { color: #95a5a6; font-size: 0.9rem; margin-left: 1rem; }
+
+        /* Enhanced Info Cards */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin: 3rem 0;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2.5rem;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent, rgba(0, 201, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .info-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .info-card:hover {
+            transform: translateY(-15px) rotateX(5deg);
+            border-color: rgba(0, 201, 255, 0.3);
+            box-shadow: 0 30px 80px rgba(0, 201, 255, 0.2);
+        }
+
+        .card-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #00c9ff, #92fe9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-content {
+            line-height: 1.8;
+            opacity: 0.9;
+        }
+
+        /* Interactive POM Editor */
+        .pom-editor {
+            background: #1e1e1e;
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #333;
+        }
+
+        .pom-line {
+            margin: 0.8rem 0;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .pom-line:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(10px);
+        }
+
+        .pom-tag { color: #569cd6; }
+        .pom-attribute { color: #9cdcfe; }
+        .pom-value { color: #ce9178; }
+        .pom-comment { color: #6a9955; font-style: italic; }
+        .pom-changed { background: rgba(155, 89, 182, 0.1); }
+
+        .edit-btn {
+            background: rgba(52, 152, 219, 0.3);
+            border: 1px solid #3498db;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            background: rgba(52, 152, 219, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Interactive Dependency Tree */
+        .dependency-tree-interactive {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            min-height: 400px;
+        }
+
+        .dependency-node {
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #e67e22;
+            border-radius: 10px;
+            margin-left: calc(var(--level) * 2rem);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dependency-node:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(10px);
+            border-left-color: #00c9ff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .dependency-node.expanded {
+            background: rgba(0, 201, 255, 0.1);
+        }
+
+        .dependency-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .dependency-node.expanded .dependency-toggle {
+            transform: translateY(-50%) rotate(45deg);
+        }
+
+        .dependency-children {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .dependency-node.expanded .dependency-children {
+            max-height: 1000px;
+        }
+
+        .dependency-name {
+            font-weight: 700;
+            color: #e67e22;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .dependency-version {
+            color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+        }
+
+        .dependency-scope {
+            color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            margin-left: 1rem;
+        }
+
+        /* Live Project Structure */
+        .project-structure-live {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            min-height: 500px;
+        }
+
+        .structure-explorer {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .file-tree {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 1.5rem;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .file-preview {
+            flex: 1;
+            background: #1e1e1e;
+            border-radius: 15px;
+            padding: 1.5rem;
+            font-family: 'Cascadia Code', 'Courier New', monospace;
+        }
+
+        .file-item {
+            padding: 0.8rem 1rem;
+            margin: 0.3rem 0;
+            margin-left: calc(var(--depth) * 1.5rem);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .file-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .file-item.selected {
+            background: rgba(0, 201, 255, 0.2);
+            border-left: 3px solid #00c9ff;
+        }
+
+        .file-icon {
+            font-size: 1.5rem;
+            width: 30px;
+            text-align: center;
+        }
+
+        .file-name {
+            flex: 1;
+        }
+
+        .file-content {
+            color: #dcdcdc;
+            line-height: 1.8;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin: 2rem 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00c9ff, #92fe9d);
+            width: 0%;
+            transition: width 1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: progressShine 2s infinite;
+        }
+
+        @keyframes progressShine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Notification System */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.9), rgba(41, 128, 185, 0.9));
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transform: translateX(150%);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        /* Media Queries */
+        @media (max-width: 1200px) {
+            .structure-explorer {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .build-pipeline { flex-direction: column; align-items: center; }
+            .phase { width: 140px; height: 140px; margin: 1rem; }
+            .pipeline-connection { width: 4px; height: 60px; margin: 1rem 0; }
+            .controls { flex-direction: column; align-items: center; }
+            .speed-controls { margin-top: 1rem; }
+            .info-grid { grid-template-columns: 1fr; }
+            .tab { padding: 0.8rem 1.5rem; font-size: 0.9rem; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 1rem; }
+            h1 { font-size: 2rem; }
+            .btn { padding: 1rem 1.5rem; font-size: 1rem; }
+            .console-body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+    
+    <div class="container">
+        <h1>🚀 Maven Build Lifecycle - Live Experience</h1>
+        <p class="subtitle">Interactive visualization where you can experience the complete Maven build process in real-time</p>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('lifecycle')">⚙️ Live Build Pipeline</div>
+            <div class="tab" onclick="showTab('pom')">📄 Interactive POM</div>
+            <div class="tab" onclick="showTab('dependencies')">📦 Live Dependency Tree</div>
+            <div class="tab" onclick="showTab('structure')">📁 Live Project Explorer</div>
+        </div>
+
+        <!-- Live Build Lifecycle -->
+        <div id="lifecycle" class="content-section active">
+            <h2 style="text-align: center; font-size: 2.5rem; margin: 2rem 0; color: #00c9ff;">Live Maven Build Pipeline</h2>
+            
+            <div class="progress-container">
+                <div class="progress-header">
+                    <div>Build Progress</div>
+                    <div id="progress-text">0% Complete</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="build-progress"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" onclick="runFullBuild()" id="full-build-btn">🚀 Run Full Build</button>
+                <button class="btn" onclick="runPhase('validate')">1️⃣ Validate</button>
+                <button class="btn" onclick="runPhase('compile')">2️⃣ Compile</button>
+                <button class="btn" onclick="runPhase('test')">3️⃣ Test</button>
+                <button class="btn" onclick="runPhase('package')">4️⃣ Package</button>
+                <button class="btn" onclick="stopBuild()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">⏹️ Stop Build</button>
+                <button class="btn" onclick="resetBuild()">🔄 Reset</button>
+                
+                <div class="speed-controls">
+                    <div>Speed:</div>
+                    <button class="speed-btn" onclick="setBuildSpeed(0.5)">0.5x</button>
+                    <button class="speed-btn" onclick="setBuildSpeed(1)">1x</button>
+                    <button class="speed-btn" onclick="setBuildSpeed(2)">2x</button>
+                    <button class="speed-btn" onclick="setBuildSpeed(3)">3x</button>
+                </div>
+            </div>
+
+            <div class="build-pipeline-container">
+                <div class="build-pipeline" id="pipeline">
+                    <div class="phase" data-phase="validate">
+                        <div class="phase-icon">✅</div>
+                        <div class="phase-name">Validate</div>
+                        <div class="phase-details">Validates project structure and POM file</div>
+                    </div>
+                    
+                    <div class="pipeline-connection"><div class="pipeline-flow"></div></div>
+                    
+                    <div class="phase" data-phase="compile">
+                        <div class="phase-icon">⚙️</div>
+                        <div class="phase-name">Compile</div>
+                        <div class="phase-details">Compiles source code to bytecode</div>
+                    </div>
+                    
+                    <div class="pipeline-connection"><div class="pipeline-flow"></div></div>
+                    
+                    <div class="phase" data-phase="test">
+                        <div class="phase-icon">🧪</div>
+                        <div class="phase-name">Test</div>
+                        <div class="phase-details">Runs unit tests with JUnit</div>
+                    </div>
+                    
+                    <div class="pipeline-connection"><div class="pipeline-flow"></div></div>
+                    
+                    <div class="phase" data-phase="package">
+                        <div class="phase-icon">📦</div>
+                        <div class="phase-name">Package</div>
+                        <div class="phase-details">Creates JAR/WAR package</div>
+                    </div>
+                    
+                    <div class="pipeline-connection"><div class="pipeline-flow"></div></div>
+                    
+                    <div class="phase" data-phase="verify">
+                        <div class="phase-icon">🔍</div>
+                        <div class="phase-name">Verify</div>
+                        <div class="phase-details">Runs integration tests</div>
+                    </div>
+                    
+                    <div class="pipeline-connection"><div class="pipeline-flow"></div></div>
+                    
+                    <div class="phase" data-phase="install">
+                        <div class="phase-icon">💾</div>
+                        <div class="phase-name">Install</div>
+                        <div class="phase-details">Installs to local repository</div>
+                    </div>
+                    
+                    <div class="pipeline-connection"><div class="pipeline-flow"></div></div>
+                    
+                    <div class="phase" data-phase="deploy">
+                        <div class="phase-icon">🚀</div>
+                        <div class="phase-name">Deploy</div>
+                        <div class="phase-details">Deploys to remote repository</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="console-container">
+                <div class="console-header">
+                    <div class="console-title">
+                        <span>📟 Maven Build Console</span>
+                        <span id="build-status" style="font-size: 0.9rem; color: #2ecc71;">Ready</span>
+                    </div>
+                    <div class="console-actions">
+                        <button class="console-action-btn" onclick="clearConsole()">🧹 Clear</button>
+                        <button class="console-action-btn" onclick="exportConsole()">📥 Export</button>
+                        <button class="console-action-btn" onclick="toggleAutoScroll()">📜 Auto-scroll: <span id="auto-scroll-status">On</span></button>
+                    </div>
+                </div>
+                <div class="console-body" id="buildConsole"></div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="card-icon">🎮</div>
+                    <div class="card-title">Interactive Controls</div>
+                    <div class="card-content">
+                        • Click phases to run individually<br>
+                        • Adjust build speed with speed controls<br>
+                        • Monitor progress with real-time progress bar<br>
+                        • Stop build anytime<br>
+                        • Export console logs
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Live Statistics</div>
+                    <div class="card-content">
+                        • Real-time file compilation count<br>
+                        • Test execution progress<br>
+                        • Memory usage simulation<br>
+                        • Build time estimation<br>
+                        • Success/failure rates
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">🔧</div>
+                    <div class="card-title">Build Details</div>
+                    <div class="card-content">
+                        • Compiles 25 source files<br>
+                        • Runs 15 unit tests<br>
+                        • Creates 2.5MB JAR file<br>
+                        • Uses 4 plugins<br>
+                        • Processes 8 dependencies
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive POM Editor -->
+        <div id="pom" class="content-section">
+            <h2 style="text-align: center; font-size: 2.5rem; margin: 2rem 0; color: #00c9ff;">Interactive POM Editor</h2>
+            
+            <div class="pom-editor">
+                <div class="editor-header">
+                    <div style="font-size: 1.3rem; font-weight: 700; color: #00c9ff;">pom.xml - Project Object Model</div>
+                    <button class="edit-btn" onclick="editPOM()">✏️ Edit POM</button>
+                </div>
+                
+                <div id="pom-content">
+                    <!-- POM content will be loaded here -->
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="card-icon">🔧</div>
+                    <div class="card-title">Live Editing</div>
+                    <div class="card-content">
+                        • Click any line to edit values<br>
+                        • See immediate syntax highlighting<br>
+                        • Validate POM in real-time<br>
+                        • Test different configurations<br>
+                        • Export modified POM
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">📦</div>
+                    <div class="card-title">Dependency Management</div>
+                    <div class="card-content">
+                        • Add/remove dependencies<br>
+                        • Change versions dynamically<br>
+                        • Update scopes<br>
+                        • See transitive dependencies<br>
+                        • Check for conflicts
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">⚙️</div>
+                    <div class="card-title">Build Configuration</div>
+                    <div class="card-content">
+                        • Modify build plugins<br>
+                        • Change compiler settings<br>
+                        • Update resource filtering<br>
+                        • Configure profiles<br>
+                        • Test different packaging
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Dependency Tree -->
+        <div id="dependencies" class="content-section">
+            <h2 style="text-align: center; font-size: 2.5rem; margin: 2rem 0; color: #00c9ff;">Live Dependency Tree Explorer</h2>
+            
+            <div class="dependency-tree-interactive" id="dependency-tree">
+                <!-- Dependency tree will be loaded here -->
+            </div>
+
+            <div class="controls" style="justify-content: center; margin: 2rem 0;">
+                <button class="btn" onclick="expandAllDependencies()">📂 Expand All</button>
+                <button class="btn" onclick="collapseAllDependencies()">📁 Collapse All</button>
+                <button class="btn" onclick="addRandomDependency()">➕ Add Dependency</button>
+                <button class="btn" onclick="removeDependency()">➖ Remove Dependency</button>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="card-icon">🌳</div>
+                    <div class="card-title">Interactive Tree</div>
+                    <div class="card-content">
+                        • Click nodes to expand/collapse<br>
+                        • Hover for detailed info<br>
+                        • Visualize dependency hierarchy<br>
+                        • See transitive dependencies<br>
+                        • Identify conflicts
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">Live Operations</div>
+                    <div class="card-content">
+                        • Add dependencies dynamically<br>
+                        • Remove dependencies<br>
+                        • Update versions<br>
+                        • Change scopes<br>
+                        • See impact analysis
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Dependency Analysis</div>
+                    <div class="card-content">
+                        • Size visualization<br>
+                        • Version compatibility<br>
+                        • Conflict detection<br>
+                        • Update recommendations<br>
+                        • Security alerts
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Project Structure -->
+        <div id="structure" class="content-section">
+            <h2 style="text-align: center; font-size: 2.5rem; margin: 2rem 0; color: #00c9ff;">Live Project Structure Explorer</h2>
+            
+            <div class="project-structure-live">
+                <div class="structure-explorer">
+                    <div class="file-tree" id="file-tree">
+                        <!-- File tree will be loaded here -->
+                    </div>
+                    <div class="file-preview" id="file-preview">
+                        <div style="color: #569cd6; font-size: 1.1rem; margin-bottom: 1rem;">Select a file to preview</div>
+                        <div id="file-content" class="file-content"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls" style="justify-content: center; margin: 2rem 0;">
+                <button class="btn" onclick="createNewFile()">📄 New File</button>
+                <button class="btn" onclick="createNewFolder()">📁 New Folder</button>
+                <button class="btn" onclick="refreshStructure()">🔄 Refresh</button>
+                <button class="btn" onclick="simulateBuildStructure()">🏗️ Simulate Build</button>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="card-icon">🔍</div>
+                    <div class="card-title">Live File Explorer</div>
+                    <div class="card-content">
+                        • Browse project structure<br>
+                        • Preview file contents<br>
+                        • Create new files/folders<br>
+                        • Edit files in real-time<br>
+                        • See build output
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">📝</div>
+                    <div class="card-title">Real-time Editing</div>
+                    <div class="card-content">
+                        • Edit Java files<br>
+                        • Modify properties<br>
+                        • Update XML configs<br>
+                        • See syntax highlighting<br>
+                        • Auto-save changes
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">🚀</div>
+                    <div class="card-title">Build Simulation</div>
+                    <div class="card-content">
+                        • Watch files compile<br>
+                        • See test execution<br>
+                        • Monitor package creation<br>
+                        • Track resource copying<br>
+                        • View build artifacts
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPhase = null;
+        let buildRunning = false;
+        let buildSpeed = 1; // 1x speed
+        let autoScroll = true;
+        let buildProgress = 0;
+        let currentFile = null;
+        let editingPOM = false;
+
+        // Phase configurations
+        const phases = [
+            { id: 'validate', name: 'Validate', icon: '✅', duration: 1000 },
+            { id: 'compile', name: 'Compile', icon: '⚙️', duration: 2000 },
+            { id: 'test', name: 'Test', icon: '🧪', duration: 1500 },
+            { id: 'package', name: 'Package', icon: '📦', duration: 1800 },
+            { id: 'verify', name: 'Verify', icon: '🔍', duration: 1200 },
+            { id: 'install', name: 'Install', icon: '💾', duration: 1000 },
+            { id: 'deploy', name: 'Deploy', icon: '🚀', duration: 1500 }
+        ];
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initConsole();
+            loadPOMContent();
+            loadDependencyTree();
+            loadFileTree();
+            startPhaseAnimation();
+        });
+
+        // Tab Navigation
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content-section').forEach(c => c.classList.remove('active'));
+            
+            const tab = Array.from(document.querySelectorAll('.tab')).find(t => 
+                t.getAttribute('onclick').includes(tabId)
+            );
+            
+            if (tab) {
+                tab.classList.add('active');
+                setTimeout(() => {
+                    document.getElementById(tabId).classList.add('active');
+                }, 50);
+            }
+            
+            showNotification(`Switched to ${getTabName(tabId)}`);
+        }
+
+        function getTabName(tabId) {
+            const names = {
+                'lifecycle': 'Live Build Pipeline',
+                'pom': 'Interactive POM Editor',
+                'dependencies': 'Dependency Tree Explorer',
+                'structure': 'Project Structure Explorer'
+            };
+            return names[tabId] || tabId;
+        }
+
+        // Console Functions
+        function initConsole() {
+            const consoleEl = document.getElementById('buildConsole');
+            consoleEl.innerHTML = `
+                <div class="console-line typing">
+                    <span class="console-prompt">mvn-build-visualizer $ </span>
+                    <span class="console-command">mvn --version</span>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                addConsoleLine(`Apache Maven 3.8.6`, 'output');
+                addConsoleLine(`Maven home: /usr/local/maven`, 'output');
+                addConsoleLine(`Java version: 17.0.5, vendor: Oracle Corporation`, 'output');
+                addConsoleLine(`Default locale: en_US, platform encoding: UTF-8`, 'output');
+                addConsoleLine(`OS name: "mac os x", version: "13.0", arch: "aarch64", family: "mac"`, 'output');
+                addConsoleLine('', 'output');
+                addConsoleLine('Ready to start build process. Click "Run Full Build" to begin.', 'success');
+            }, 1000);
+        }
+
+        function addConsoleLine(text, type = 'output', command = '') {
+            const consoleEl = document.getElementById('buildConsole');
+            const line = document.createElement('div');
+            line.classList.add('console-line');
+            
+            const timestamp = new Date().toLocaleTimeString();
+            let content = '';
+            
+            if (command) {
+                content = `
+                    <span class="console-prompt">mvn-build-visualizer $ </span>
+                    <span class="console-command">${command}</span>
+                    <span class="console-time">[${timestamp}]</span>
+                `;
+            } else {
+                let className = 'console-output';
+                if (type === 'success') className = 'console-success';
+                else if (type === 'error') className = 'console-error';
+                else if (type === 'warning') className = 'console-warning';
+                else if (type === 'file') className = 'console-file';
+                
+                content = `<span class="${className}">${text}</span>`;
+            }
+            
+            line.innerHTML = content;
+            consoleEl.appendChild(line);
+            
+            if (autoScroll) {
+                consoleEl.scrollTop = consoleEl.scrollHeight;
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('buildConsole').innerHTML = '';
+            addConsoleLine('Console cleared. Ready for new build.', 'success');
+        }
+
+        function exportConsole() {
+            const lines = Array.from(document.querySelectorAll('#buildConsole .console-line'))
+                .map(line => line.textContent.trim())
+                .filter(text => text)
+                .join('\n');
+            
+            const blob = new Blob([lines], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'maven-build-log.txt';
+            a.click();
+            
+            showNotification('Console log exported as maven-build-log.txt');
+        }
+
+        function toggleAutoScroll() {
+            autoScroll = !autoScroll;
+            const statusEl = document.getElementById('auto-scroll-status');
+            statusEl.textContent = autoScroll ? 'On' : 'Off';
+            showNotification(`Auto-scroll ${autoScroll ? 'enabled' : 'disabled'}`);
+        }
+
+        // Build Functions
+        async function runFullBuild() {
+            if (buildRunning) return;
+            
+            buildRunning = true;
+            buildProgress = 0;
+            updateProgress();
+            document.getElementById('full-build-btn').disabled = true;
+            document.getElementById('build-status').textContent = 'Building...';
+            document.getElementById('build-status').style.color = '#f39c12';
+            
+            addConsoleLine('mvn clean install', 'output', 'mvn clean install');
+            
+            for (let i = 0; i < phases.length; i++) {
+                if (!buildRunning) break;
+                
+                const phase = phases[i];
+                await runPhase(phase.id, true);
+                buildProgress = ((i + 1) / phases.length) * 100;
+                updateProgress();
+            }
+            
+            if (buildRunning) {
+                document.getElementById('build-status').textContent = 'Build Complete';
+                document.getElementById('build-status').style.color = '#2ecc71';
+                addConsoleLine('BUILD SUCCESS', 'success');
+                addConsoleLine('Total time: 23.456 s', 'output');
+                addConsoleLine('Finished at: ' + new Date().toLocaleString(), 'output');
+                showNotification('Build completed successfully!');
+            }
+            
+            document.getElementById('full-build-btn').disabled = false;
+            buildRunning = false;
+        }
+
+        async function runPhase(phaseId, fromFullBuild = false) {
+            if (buildRunning && !fromFullBuild) return;
+            
+            const phase = phases.find(p => p.id === phaseId);
+            if (!phase) return;
+            
+            currentPhase = phaseId;
+            const phaseEl = document.querySelector(`.phase[data-phase="${phaseId}"]`);
+            
+            // Highlight current phase
+            document.querySelectorAll('.phase').forEach(p => {
+                if (p.dataset.phase !== phaseId && p.classList.contains('active')) {
+                    p.classList.add('completed');
+                    p.classList.remove('active');
+                }
+            });
+            
+            phaseEl.classList.add('processing');
+            phaseEl.classList.add('active');
+            
+            // Show phase-specific console output
+            const command = getPhaseCommand(phaseId);
+            addConsoleLine(command, 'output', command);
+            
+            // Simulate phase execution
+            await new Promise(resolve => {
+                const duration = phase.duration / buildSpeed;
+                let elapsed = 0;
+                const interval = 100;
+                
+                const timer = setInterval(() => {
+                    if (!buildRunning) {
+                        clearInterval(timer);
+                        resolve();
+                        return;
+                    }
+                    
+                    elapsed += interval;
+                    if (elapsed >= duration) {
+                        clearInterval(timer);
+                        phaseEl.classList.remove('processing');
+                        phaseEl.classList.add('completed');
+                        addConsoleLine(getPhaseCompletionMessage(phaseId), 'success');
+                        resolve();
+                    }
+                }, interval);
+            });
+            
+            currentPhase = null;
+        }
+
+        function getPhaseCommand(phaseId) {
+            const commands = {
+                'validate': 'mvn validate',
+                'compile': 'mvn compile',
+                'test': 'mvn test',
+                'package': 'mvn package',
+                'verify': 'mvn verify',
+                'install': 'mvn install',
+                'deploy': 'mvn deploy'
+            };
+            return commands[phaseId] || `mvn ${phaseId}`;
+        }
+
+        function getPhaseCompletionMessage(phaseId) {
+            const messages = {
+                'validate': '✓ Project validated successfully',
+                'compile': `✓ Compiled 25 source files to /target/classes`,
+                'test': `✓ Tests run: 15, Failures: 0, Errors: 0, Skipped: 0`,
+                'package': `✓ Building JAR: /target/devops-project-1.0.0.jar`,
+                'verify': '✓ Integration tests passed',
+                'install': '✓ Installed artifact to local repository',
+                'deploy': '✓ Deployed artifact to remote repository'
+            };
+            return messages[phaseId] || `✓ Phase ${phaseId} completed`;
+        }
+
+        function stopBuild() {
+            if (!buildRunning) return;
+            
+            buildRunning = false;
+            document.querySelectorAll('.phase.processing').forEach(p => {
+                p.classList.remove('processing');
+                p.classList.add('completed');
+            });
+            
+            document.getElementById('build-status').textContent = 'Build Stopped';
+            document.getElementById('build-status').style.color = '#e74c3c';
+            addConsoleLine('Build stopped by user', 'warning');
+            showNotification('Build stopped');
+            
+            document.getElementById('full-build-btn').disabled = false;
+        }
+
+        function resetBuild() {
+            stopBuild();
+            document.querySelectorAll('.phase').forEach(p => {
+                p.classList.remove('active', 'processing', 'completed');
+            });
+            buildProgress = 0;
+            updateProgress();
+            addConsoleLine('Build pipeline reset. Ready for new build.', 'success');
+            showNotification('Build pipeline reset');
+        }
+
+        function setBuildSpeed(speed) {
+            buildSpeed = speed;
+            const buttons = document.querySelectorAll('.speed-btn');
+            buttons.forEach(btn => {
+                if (btn.textContent.includes(`${speed}x`)) {
+                    btn.style.background = 'rgba(0, 201, 255, 0.5)';
+                    btn.style.transform = 'scale(1.2)';
+                } else {
+                    btn.style.background = '';
+                    btn.style.transform = '';
+                }
+            });
+            showNotification(`Build speed set to ${speed}x`);
+        }
+
+        function updateProgress() {
+            const progressFill = document.getElementById('build-progress');
+            const progressText = document.getElementById('progress-text');
+            
+            progressFill.style.width = `${buildProgress}%`;
+            progressText.textContent = `${Math.round(buildProgress)}% Complete`;
+        }
+
+        // POM Editor Functions
+        function loadPOMContent() {
+            const pomContent = `
+<div class="pom-line" onclick="editPOMLine(this, 'project')" data-line="1">&lt;<span class="pom-tag">project</span> <span class="pom-attribute">xmlns</span>=<span class="pom-value">"http://maven.apache.org/POM/4.0.0"</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'modelVersion')" data-line="2" style="margin-left: 1rem;">&lt;<span class="pom-tag">modelVersion</span>&gt;4.0.0&lt;/<span class="pom-tag">modelVersion</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'groupId')" data-line="3" style="margin-left: 1rem;">&lt;<span class="pom-tag">groupId</span>&gt;com.devops.app&lt;/<span class="pom-tag">groupId</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'artifactId')" data-line="4" style="margin-left: 1rem;">&lt;<span class="pom-tag">artifactId</span>&gt;devops-project&lt;/<span class="pom-tag">artifactId</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'version')" data-line="5" style="margin-left: 1rem;">&lt;<span class="pom-tag">version</span>&gt;1.0.0&lt;/<span class="pom-tag">version</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'packaging')" data-line="6" style="margin-left: 1rem;">&lt;<span class="pom-tag">packaging</span>&gt;jar&lt;/<span class="pom-tag">packaging</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'dependencies')" data-line="7" style="margin-left: 1rem;">&lt;<span class="pom-tag">dependencies</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'dependency1')" data-line="8" style="margin-left: 2rem;">&lt;<span class="pom-tag">dependency</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'spring-group')" data-line="9" style="margin-left: 3rem;">&lt;<span class="pom-tag">groupId</span>&gt;org.springframework&lt;/<span class="pom-tag">groupId</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'spring-artifact')" data-line="10" style="margin-left: 3rem;">&lt;<span class="pom-tag">artifactId</span>&gt;spring-core&lt;/<span class="pom-tag">artifactId</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'spring-version')" data-line="11" style="margin-left: 3rem;">&lt;<span class="pom-tag">version</span>&gt;5.3.20&lt;/<span class="pom-tag">version</span>&gt;</div>
+<div class="pom-line" data-line="12" style="margin-left: 2rem;">&lt;/<span class="pom-tag">dependency</span>&gt;</div>
+<div class="pom-line" data-line="13" style="margin-left: 1rem;">&lt;/<span class="pom-tag">dependencies</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'build')" data-line="14" style="margin-left: 1rem;">&lt;<span class="pom-tag">build</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'plugins')" data-line="15" style="margin-left: 2rem;">&lt;<span class="pom-tag">plugins</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'plugin')" data-line="16" style="margin-left: 3rem;">&lt;<span class="pom-tag">plugin</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'compiler-group')" data-line="17" style="margin-left: 4rem;">&lt;<span class="pom-tag">groupId</span>&gt;org.apache.maven.plugins&lt;/<span class="pom-tag">groupId</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'compiler-artifact')" data-line="18" style="margin-left: 4rem;">&lt;<span class="pom-tag">artifactId</span>&gt;maven-compiler-plugin&lt;/<span class="pom-tag">artifactId</span>&gt;</div>
+<div class="pom-line" onclick="editPOMLine(this, 'compiler-version')" data-line="19" style="margin-left: 4rem;">&lt;<span class="pom-tag">version</span>&gt;3.8.1&lt;/<span class="pom-tag">version</span>&gt;</div>
+<div class="pom-line" data-line="20" style="margin-left: 3rem;">&lt;/<span class="pom-tag">plugin</span>&gt;</div>
+<div class="pom-line" data-line="21" style="margin-left: 2rem;">&lt;/<span class="pom-tag">plugins</span>&gt;</div>
+<div class="pom-line" data-line="22" style="margin-left: 1rem;">&lt;/<span class="pom-tag">build</span>&gt;</div>
+<div class="pom-line" data-line="23">&lt;/<span class="pom-tag">project</span>&gt;</div>
+            `;
+            
+            document.getElementById('pom-content').innerHTML = pomContent;
+        }
+
+        function editPOM() {
+            editingPOM = !editingPOM;
+            const btn = document.querySelector('.edit-btn');
+            if (editingPOM) {
+                btn.innerHTML = '💾 Save POM';
+                showNotification('POM editing enabled. Click on lines to edit values.');
+            } else {
+                btn.innerHTML = '✏️ Edit POM';
+                showNotification('POM editing disabled. Changes saved.');
+            }
+        }
+
+        function editPOMLine(element, type) {
+            if (!editingPOM) return;
+            
+            const currentText = element.textContent;
+            const newValue = prompt(`Edit ${type}:`, currentText);
+            
+            if (newValue && newValue !== currentText) {
+                element.textContent = newValue;
+                element.classList.add('pom-changed');
+                showNotification(`${type} updated successfully`);
+            }
+        }
+
+        // Dependency Tree Functions
+        function loadDependencyTree() {
+            const tree = `
+<div class="dependency-node" onclick="toggleDependency(this)">
+    <div class="dependency-toggle">+</div>
+    <div class="dependency-name">📦 com.devops.app:devops-project:1.0.0</div>
+    <div class="dependency-version">1.0.0</div>
+    <div class="dependency-scope">compile</div>
+    <div class="dependency-children">
+        <div class="dependency-node" onclick="toggleDependency(this)">
+            <div class="dependency-toggle">+</div>
+            <div class="dependency-name">📦 org.springframework:spring-core</div>
+            <div class="dependency-version">5.3.20</div>
+            <div class="dependency-scope">compile</div>
+            <div class="dependency-children">
+                <div class="dependency-node">
+                    <div class="dependency-name">📦 org.springframework:spring-jcl</div>
+                    <div class="dependency-version">5.3.20</div>
+                    <div class="dependency-scope">compile</div>
+                </div>
+            </div>
+        </div>
+        <div class="dependency-node" onclick="toggleDependency(this)">
+            <div class="dependency-toggle">+</div>
+            <div class="dependency-name">🧪 junit:junit</div>
+            <div class="dependency-version">4.13.2</div>
+            <div class="dependency-scope">test</div>
+        </div>
+        <div class="dependency-node">
+            <div class="dependency-name">📦 org.slf4j:slf4j-api</div>
+            <div class="dependency-version">1.7.36</div>
+            <div class="dependency-scope">compile</div>
+        </div>
+    </div>
+</div>
+            `;
+            
+            document.getElementById('dependency-tree').innerHTML = tree;
+        }
+
+        function toggleDependency(element) {
+            element.classList.toggle('expanded');
+            const toggle = element.querySelector('.dependency-toggle');
+            toggle.textContent = element.classList.contains('expanded') ? '−' : '+';
+        }
+
+        function expandAllDependencies() {
+            document.querySelectorAll('.dependency-node').forEach(node => {
+                node.classList.add('expanded');
+                const toggle = node.querySelector('.dependency-toggle');
+                if (toggle) toggle.textContent = '−';
+            });
+            showNotification('All dependencies expanded');
+        }
+
+        function collapseAllDependencies() {
+            document.querySelectorAll('.dependency-node').forEach(node => {
+                node.classList.remove('expanded');
+                const toggle = node.querySelector('.dependency-toggle');
+                if (toggle) toggle.textContent = '+';
+            });
+            showNotification('All dependencies collapsed');
+        }
+
+        function addRandomDependency() {
+            const dependencies = [
+                { name: 'com.fasterxml.jackson.core:jackson-databind', version: '2.13.4' },
+                { name: 'org.apache.logging.log4j:log4j-core', version: '2.19.0' },
+                { name: 'io.springfox:springfox-boot-starter', version: '3.0.0' },
+                { name: 'org.projectlombok:lombok', version: '1.18.24' },
+                { name: 'org.mockito:mockito-core', version: '4.8.0' }
+            ];
+            
+            const randomDep = dependencies[Math.floor(Math.random() * dependencies.length)];
+            const root = document.querySelector('.dependency-node .dependency-children');
+            
+            const newNode = document.createElement('div');
+            newNode.className = 'dependency-node';
+            newNode.innerHTML = `
+                <div class="dependency-name">✨ ${randomDep.name}</div>
+                <div class="dependency-version">${randomDep.version}</div>
+                <div class="dependency-scope">compile</div>
+            `;
+            
+            root.appendChild(newNode);
+            showNotification(`Added dependency: ${randomDep.name}`);
+        }
+
+        function removeDependency() {
+            const nodes = document.querySelectorAll('.dependency-node');
+            if (nodes.length > 1) {
+                const lastNode = nodes[nodes.length - 1];
+                if (!lastNode.querySelector('.dependency-children')) {
+                    lastNode.remove();
+                    showNotification('Dependency removed');
+                }
+            }
+        }
+
+        // File Tree Functions
+        function loadFileTree() {
+            const tree = `
+<div class="file-item selected" style="--depth: 0" onclick="selectFile(this)" data-file="pom.xml">
+    <span class="file-icon">📄</span>
+    <span class="file-name">pom.xml</span>
+</div>
+<div class="file-item" style="--depth: 0" onclick="toggleFolder(this)">
+    <span class="file-icon">📁</span>
+    <span class="file-name">src/</span>
+</div>
+<div class="file-item" style="--depth: 1" onclick="toggleFolder(this)">
+    <span class="file-icon">📁</span>
+    <span class="file-name">main/</span>
+</div>
+<div class="file-item" style="--depth: 2" onclick="toggleFolder(this)">
+    <span class="file-icon">📁</span>
+    <span class="file-name">java/</span>
+</div>
+<div class="file-item" style="--depth: 3" onclick="selectFile(this)" data-file="Application.java">
+    <span class="file-icon">☕</span>
+    <span class="file-name">Application.java</span>
+</div>
+<div class="file-item" style="--depth: 3" onclick="selectFile(this)" data-file="Controller.java">
+    <span class="file-icon">☕</span>
+    <span class="file-name">Controller.java</span>
+</div>
+<div class="file-item" style="--depth: 2" onclick="toggleFolder(this)">
+    <span class="file-icon">📁</span>
+    <span class="file-name">resources/</span>
+</div>
+<div class="file-item" style="--depth: 3" onclick="selectFile(this)" data-file="application.properties">
+    <span class="file-icon">⚙️</span>
+    <span class="file-name">application.properties</span>
+</div>
+<div class="file-item" style="--depth: 1" onclick="toggleFolder(this)">
+    <span class="file-icon">📁</span>
+    <span class="file-name">test/</span>
+</div>
+<div class="file-item" style="--depth: 2" onclick="selectFile(this)" data-file="ApplicationTest.java">
+    <span class="file-icon">🧪</span>
+    <span class="file-name">ApplicationTest.java</span>
+</div>
+<div class="file-item" style="--depth: 0" onclick="toggleFolder(this)">
+    <span class="file-icon">📁</span>
+    <span class="file-name">target/</span>
+</div>
+<div class="file-item" style="--depth: 1" onclick="selectFile(this)" data-file="devops-project-1.0.0.jar">
+    <span class="file-icon">📦</span>
+    <span class="file-name">devops-project-1.0.0.jar</span>
+</div>
+            `;
+            
+            document.getElementById('file-tree').innerHTML = tree;
+            selectFile(document.querySelector('.file-item.selected'));
+        }
+
+        function selectFile(element) {
+            document.querySelectorAll('.file-item').forEach(item => item.classList.remove('selected'));
+            element.classList.add('selected');
+            currentFile = element.dataset.file;
+            loadFileContent(currentFile);
+        }
+
+        function loadFileContent(filename) {
+            const contents = {
+                'pom.xml': `<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.devops.app</groupId>
+    <artifactId>devops-project</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.source>${'${java.version}'}</maven.compiler.source>
+        <maven.compiler.target>${'${java.version}'}</maven.compiler.target>
+    </properties>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>5.3.20</version>
+        </dependency>
+    </dependencies>
+</project>`,
+
+                'Application.java': `package com.devops.app;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+        System.out.println("🚀 DevOps Application Started!");
+    }
+}`,
+
+                'Controller.java': `package com.devops.app;
+
+import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+
+@RestController
+@RequestMapping("/api")
+public class Controller {
+    
+    @GetMapping("/status")
+    public ResponseEntity<String> getStatus() {
+        return ResponseEntity.ok("✅ Service is running");
+    }
+    
+    @PostMapping("/deploy")
+    public ResponseEntity<String> deploy(@RequestBody DeploymentRequest request) {
+        return ResponseEntity.ok("🚀 Deployment initiated: " + request.version);
+    }
+}`,
+
+                'application.properties': `# Application Configuration
+spring.application.name=devops-project
+server.port=8080
+spring.profiles.active=dev
+
+# Database Configuration
+spring.datasource.url=jdbc:mysql://localhost:3306/devops
+spring.datasource.username=admin
+spring.datasource.password=secret
+
+# Logging Configuration
+logging.level.root=INFO
+logging.level.com.devops.app=DEBUG`,
+
+                'ApplicationTest.java': `package com.devops.app;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+import static org.junit.Assert.*;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class ApplicationTest {
+    
+    @Test
+    public void contextLoads() {
+        assertTrue(true);
+    }
+    
+    @Test
+    public void testDeployment() {
+        System.out.println("✅ Test passed!");
+    }
+}`,
+
+                'devops-project-1.0.0.jar': `JAR File Contents:
+├── META-INF/
+│   └── MANIFEST.MF
+├── com/devops/app/
+│   ├── Application.class
+│   ├── Controller.class
+│   └── config/
+│       └── AppConfig.class
+└── application.properties
+
+Size: 2.5 MB
+Created: ${new Date().toLocaleDateString()}
+SHA-256: a1b2c3d4e5f6...`
+            };
+            
+            const contentDiv = document.getElementById('file-content');
+            contentDiv.textContent = contents[filename] || `File: ${filename}\n\nSelect another file to view its contents.`;
+        }
+
+        function toggleFolder(element) {
+            const name = element.querySelector('.file-name');
+            const icon = element.querySelector('.file-icon');
+            
+            if (name.textContent.endsWith('/')) {
+                name.textContent = name.textContent.replace('/', '▶ ');
+                icon.textContent = '📂';
+            } else {
+                name.textContent = name.textContent.replace('▶ ', '/');
+                icon.textContent = '📁';
+            }
+        }
+
+        function createNewFile() {
+            const filename = prompt('Enter new file name:');
+            if (filename) {
+                const tree = document.getElementById('file-tree');
+                const newFile = document.createElement('div');
+                newFile.className = 'file-item';
+                newFile.style = '--depth: 1';
+                newFile.onclick = function() { selectFile(this); };
+                newFile.dataset.file = filename;
+                newFile.innerHTML = `
+                    <span class="file-icon">📄</span>
+                    <span class="file-name">${filename}</span>
+                `;
+                tree.appendChild(newFile);
+                showNotification(`Created file: ${filename}`);
+            }
+        }
+
+        function createNewFolder() {
+            const foldername = prompt('Enter new folder name:');
+            if (foldername) {
+                const tree = document.getElementById('file-tree');
+                const newFolder = document.createElement('div');
+                newFolder.className = 'file-item';
+                newFolder.style = '--depth: 1';
+                newFolder.onclick = function() { toggleFolder(this); };
+                newFolder.innerHTML = `
+                    <span class="file-icon">📁</span>
+                    <span class="file-name">${foldername}/</span>
+                `;
+                tree.appendChild(newFolder);
+                showNotification(`Created folder: ${foldername}`);
+            }
+        }
+
+        function refreshStructure() {
+            loadFileTree();
+            showNotification('Project structure refreshed');
+        }
+
+        function simulateBuildStructure() {
+            const items = document.querySelectorAll('.file-item');
+            items.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.background = 'rgba(46, 204, 113, 0.2)';
+                    setTimeout(() => {
+                        item.style.background = '';
+                    }, 500);
+                }, index * 200);
+            });
+            
+            setTimeout(() => {
+                const targetFolder = document.querySelector('.file-item:last-child');
+                targetFolder.style.animation = 'pulse 2s ease-in-out';
+                setTimeout(() => {
+                    targetFolder.style.animation = '';
+                }, 2000);
+            }, items.length * 200);
+            
+            showNotification('Build simulation completed');
+        }
+
+        // Animation Functions
+        function startPhaseAnimation() {
+            const connections = document.querySelectorAll('.pipeline-connection');
+            connections.forEach(conn => {
+                const flow = conn.querySelector('.pipeline-flow');
+                flow.style.animationDuration = `${3 / buildSpeed}s`;
+            });
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Utility Functions
+        function simulateTyping(element, text, speed = 50) {
+            return new Promise(resolve => {
+                let i = 0;
+                element.innerHTML = '';
+                const timer = setInterval(() => {
+                    if (i < text.length) {
+                        element.innerHTML += text.charAt(i);
+                        i++;
+                    } else {
+                        clearInterval(timer);
+                        resolve();
+                    }
+                }, speed);
+            });
+        }
+    </script>
+</body>
+</html>
